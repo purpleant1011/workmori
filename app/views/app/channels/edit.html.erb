@@ -1,0 +1,32 @@
+<% content_for :title, "채널 정보 수정" %>
+<div class="mx-auto max-w-3xl space-y-6">
+  <header class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold tracking-tight text-slate-900">채널 수정</h1>
+    <%= link_to "← 상세", app_channel_path(@channel), class: "text-sm text-indigo-600 hover:underline" %>
+  </header>
+
+  <%= form_with model: @channel, url: app_channel_path(@channel), method: :patch, local: true, scope: :channel_connection, class: "space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm" do |f| %>
+    <% if @channel.errors.any? %>
+      <div class="rounded-md bg-rose-50 p-4 text-sm text-rose-700">
+        <ul class="list-disc pl-5">
+          <% @channel.errors.full_messages.each do |m| %><li><%= m %></li><% end %>
+        </ul>
+      </div>
+    <% end %>
+    <div>
+      <label class="block text-sm font-medium text-slate-700">채널 종류</label>
+      <%= f.text_field :kind, class: "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-700">핸들</label>
+      <%= f.text_field :handle, class: "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-700">외부 ID</label>
+      <%= f.text_field :external_id, class: "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+    </div>
+    <div class="flex justify-end">
+      <%= f.submit "저장", class: "rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500" %>
+    </div>
+  <% end %>
+</div>

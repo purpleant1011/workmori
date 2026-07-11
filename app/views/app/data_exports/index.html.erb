@@ -1,0 +1,95 @@
+<% content_for :title, "데이터 내보내기" %>
+<div class="max-w-5xl mx-auto px-4 py-6">
+  <h1 class="text-2xl font-bold mb-2">데이터 내보내기</h1>
+  <p class="text-sm text-slate-500 mb-6">
+    사업장 데이터를 JSON 단일 파일 또는 CSV 묶음(ZIP)으로 다운로드할 수 있습니다. 요청 직후 백그라운드 작업으로 생성되며, 완료되면 <strong>다운로드</strong> 버튼이 활성화됩니다. 파일은 30일 후 자동 만료/삭제됩니다.
+  </p>
+
+  <div class="rounded-lg border bg-white p-5 shadow-sm mb-8">
+    <h2 class="text-lg font-semibold mb-3">새 내보내기 요청</h2>
+    <%= form_with url: app_data_exports_path, method: :post, local: true, class: "grid gap-3 md:grid-cols-4" do %>
+      <label class="text-sm">
+        <span class="block text-slate-600 mb-1">종류</span>
+        <select name="kind" class="w-full rounded border-slate-300">
+          <% (@kinds || DataExportRequest::KINDS).each do |k| %>
+            <option value="<%= k %>"><%= k %></option>
+          <% end %>
+        </select>
+      </label>
+      <label class="text-sm">
+        <span class="block text-slate-600 mb-1">형식</span>
+        <select name="format" class="w-full rounded border-slate-300">
+          <% (@formats || DataExportRequest::FORMATS).each do |f| %>
+            <option value="<%= f %>"><%= f %></option>
+          <% end %>
+        </select>
+      </label>
+      <label class="text-sm">
+        <span class="block text-slate-600 mb-1">시작일(선택)</span>
+        <input type="date" name="from" class="w-full rounded border-slate-300" />
+      </label>
+      <label class="text-sm">
+        <span class="block text-slate-600 mb-1">종료일(선택)</span>
+        <input type="date" name="to" class="w-full rounded border-slate-300" />
+      </label>
+      <div class="md:col-span-4">
+        <button type="submit" class="px-4 py-2 rounded bg-slate-900 text-white text-sm hover:bg-slate-700">
+          내보내기 요청
+        </button>
+      </div>
+    <% end %>
+    <p class="text-xs text-slate-400 mt-3">
+      <strong>json</strong>은 단일 JSON 문서, <strong>csv</strong>는 테이블별 CSV 묶음(ZIP), <strong>zip</strong>은 JSON+CSV 묶음입니다.
+    </p>
+  </div>
+
+  <div class="rounded-lg border bg-white shadow-sm overflow-hidden">
+    <table class="min-w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600">
+        <tr>
+          <th class="text-left px-3 py-2">#</th>
+          <th class="text-left px-3 py-2">종류/형식</th>
+          <th class="text-left px-3 py-2">상태</th>
+          <th class="text-left px-3 py-2">요청시각</th>
+          <th class="text-left px-3 py-2">완료시각</th>
+          <th class="text-left px-3 py-2">크기</th>
+          <th class="text-left px-3 py-2">만료</th>
+          <th class="text-right px-3 py-2">액션</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y">
+        <% if @exports.any? %>
+          <% @exports.each do |e| %>
+            <tr>
+              <td class="px-3 py-2 font-mono text-xs">#<%= e.id %></td>
+              <td class="px-3 py-2"><%= e.kind %> / <%= e.format %></td>
+              <td class="px-3 py-2">
+                <% color = case e.state
+                  when "ready" then "bg-emerald-100 text-emerald-800"
+                  when "pending", "running" then "bg-amber-100 text-amber-800"
+                  when "failed" then "bg-rose-100 text-rose-800"
+                  when "expired" then "bg-slate-200 text-slate-700"
+                  else "bg-slate-100 text-slate-700"
+                end %>
+                <span class="px-2 py-0.5 rounded text-xs <%= color %>"><%= e.state %></span>
+              </td>
+              <td class="px-3 py-2 text-slate-500 text-xs"><%= e.requested_at&.strftime("%Y-%m-%d %H:%M") || "—" %></td>
+              <td class="px-3 py-2 text-slate-500 text-xs"><%= e.ready_at&.strftime("%Y-%m-%d %H:%M") || "—" %></td>
+              <td class="px-3 py-2 text-xs"><%= e.file_size_human %></td>
+              <td class="px-3 py-2 text-xs text-slate-500"><%= e.expires_at&.strftime("%Y-%m-%d") || "—" %></td>
+              <td class="px-3 py-2 text-right whitespace-nowrap">
+                <%= link_to "상세", app_data_export_path(e), class: "text-blue-600 hover:underline mr-2" %>
+                <% if e.downloadable? %>
+                  <%= link_to "다운로드", app_download_data_export_path(e), class: "text-emerald-600 hover:underline mr-2" %>
+                <% end %>
+                <%= button_to "삭제", app_data_export_path(e), method: :delete, form: { data: { turbo_confirm: "정말 삭제할까요?" } }, class: "text-rose-600 hover:underline" %>
+              </td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr><td colspan="8" class="px-3 py-6 text-center text-slate-400">아직 내보내기 요청이 없습니다.</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

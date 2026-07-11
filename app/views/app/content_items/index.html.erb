@@ -1,0 +1,39 @@
+<% content_for :title, "콘텐츠 목록" %>
+<div class="max-w-6xl mx-auto p-6 space-y-4">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold">📚 콘텐츠</h1>
+      <p class="text-sm text-gray-500">최근 생성된 콘텐츠 100건</p>
+    </div>
+    <a class="px-4 py-2 rounded bg-indigo-600 text-white" href="<%= app_new_content_item_path %>">+ 새 콘텐츠 생성</a>
+  </div>
+
+  <% if @contents.empty? %>
+    <p class="text-gray-500 p-8 text-center border rounded">아직 콘텐츠가 없습니다. 새 콘텐츠를 생성해 보세요.</p>
+  <% else %>
+    <table class="w-full text-sm border-collapse">
+      <thead>
+        <tr class="bg-gray-50 text-left">
+          <th class="border p-2">제목</th>
+          <th class="border p-2">state</th>
+          <th class="border p-2">safety</th>
+          <th class="border p-2">intake</th>
+          <th class="border p-2">생성일</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @contents.each do |c| %>
+          <tr class="hover:bg-gray-50">
+            <td class="border p-2">
+              <a class="text-indigo-700 hover:underline" href="<%= app_content_item_path(c) %>"><%= c.title %></a>
+            </td>
+            <td class="border p-2 font-mono text-xs"><%= c.state %></td>
+            <td class="border p-2 font-mono text-xs"><%= c.safety_state %></td>
+            <td class="border p-2 font-mono text-xs"><%= c.content_kind %></td>
+            <td class="border p-2 text-xs"><%= c.created_at.strftime("%m-%d %H:%M") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>

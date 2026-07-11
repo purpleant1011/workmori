@@ -1,0 +1,47 @@
+<% content_for :title, @industry.industry_code %>
+<section class="py-12">
+  <div class="text-xs text-slate-500">업종 코드: <%= @industry.industry_code %></div>
+  <h1 class="mt-2 text-4xl font-bold text-slate-900">
+    <%= @industry.starter_ai_employee&.dig("display_name") || @industry.industry_code.humanize %>
+  </h1>
+  <p class="mt-4 text-lg text-slate-700 max-w-3xl">
+    워크모리가 이 업종에 기본으로 설정하는 AI 직원 형태입니다.
+  </p>
+</section>
+
+<section class="py-8 max-w-3xl space-y-4">
+  <% if @industry.starter_ai_employee.is_a?(Hash) && @industry.starter_ai_employee.any? %>
+    <div class="p-6 rounded-lg bg-white shadow-sm">
+      <h2 class="text-lg font-semibold text-slate-900">기본 AI 직원 설정</h2>
+      <dl class="mt-2 text-sm text-slate-700 grid grid-cols-3 gap-2">
+        <% @industry.starter_ai_employee.each do |k, v| %>
+          <dt class="font-semibold col-span-1"><%= k %></dt>
+          <dd class="col-span-2"><%= v.is_a?(String) ? v : v.inspect %></dd>
+        <% end %>
+      </dl>
+    </div>
+  <% end %>
+  <% if @industry.starter_guardrails.is_a?(Array) && @industry.starter_guardrails.any? %>
+    <div class="p-6 rounded-lg bg-white shadow-sm">
+      <h2 class="text-lg font-semibold text-slate-900">가드레일 (금지 패턴)</h2>
+      <ul class="mt-2 list-disc list-inside text-slate-700 text-sm">
+        <% @industry.starter_guardrails.each do |g| %>
+          <li>
+            <strong><%= g["action"] %>:</strong>
+            <%= Array(g["patterns"]).join(", ") %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+  <% if @industry.starter_automations.is_a?(Array) && @industry.starter_automations.any? %>
+    <div class="p-6 rounded-lg bg-white shadow-sm">
+      <h2 class="text-lg font-semibold text-slate-900">기본 자동화</h2>
+      <ul class="mt-2 list-disc list-inside text-slate-700 text-sm">
+        <% @industry.starter_automations.each do |a| %>
+          <li><%= a["name"] %> (<%= a["intent_kind"] %>)</li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+</section>

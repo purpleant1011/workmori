@@ -1,0 +1,52 @@
+<% content_for :title, "피드백 보내기" %>
+<div class="max-w-xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-4">서비스 피드백</h1>
+  <p class="text-sm text-slate-600 mb-6">응답해 주신 내용은 서비스 개선에만 사용됩니다.</p>
+
+  <%= form_with model: @csat, url: app_csat_index_path, local: true, class: "space-y-4" do |f| %>
+    <% if @csat.errors.any? %>
+      <div class="bg-rose-50 border border-rose-200 text-rose-700 rounded p-3 text-sm">
+        <ul class="list-disc list-inside">
+          <% @csat.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div>
+      <label class="block text-sm font-medium mb-2">만족도 (1~5)</label>
+      <div class="flex gap-2">
+        <% (1..5).each do |n| %>
+          <label class="cursor-pointer">
+            <%= f.radio_button :score, n, class: "peer hidden" %>
+            <span class="block w-12 h-12 rounded-full border-2 border-slate-300 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 flex items-center justify-center text-xl font-bold peer-checked:text-emerald-700">
+              <%= n %>
+            </span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <div>
+      <%= f.label :comment, "코멘트 (선택)", class: "block text-sm font-medium mb-1" %>
+      <%= f.text_area :comment, rows: 3, class: "w-full border rounded p-2" %>
+    </div>
+
+    <div>
+      <%= f.label :channel, "채널", class: "block text-sm font-medium mb-1" %>
+      <%= f.select :channel, [["앱 내", "app"], ["이메일", "email"], ["카카오 채널", "kakao_channel"], ["인스타그램", "instagram"]], {}, class: "w-full border rounded p-2" %>
+    </div>
+
+    <div>
+      <%= f.label :respondent_kind, "응답자", class: "block text-sm font-medium mb-1" %>
+      <%= f.select :respondent_kind, [["고객", "customer"], ["내부(직원)", "internal"]], {}, class: "w-full border rounded p-2" %>
+    </div>
+
+    <%= f.submit "보내기", class: "px-4 py-2 bg-emerald-600 text-white rounded cursor-pointer" %>
+  <% end %>
+
+  <div class="mt-6 text-xs text-slate-500">
+    <%= link_to "← 분석 페이지로", app_analytics_path %>
+  </div>
+</div>

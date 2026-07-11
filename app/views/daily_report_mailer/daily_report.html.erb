@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="utf-8"><title>워크모리 일간 리포트</title></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: #f9fafb; margin: 0; padding: 24px;">
+<div style="max-width: 640px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+  <h1 style="margin: 0 0 8px 0; font-size: 22px; color: #111827;"><%= @account.name %> · 일간 리포트</h1>
+  <p style="margin: 0 0 24px 0; color: #6b7280; font-size: 14px;"><%= @report_date.strftime("%Y-%m-%d (%a)") %></p>
+
+  <h2 style="font-size: 16px; color: #111827; margin: 24px 0 12px 0;">📊 핵심 지표</h2>
+  <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+    <tr style="border-bottom: 1px solid #e5e7eb;">
+      <td style="padding: 8px 0; color: #6b7280;">콘텐츠 생성</td>
+      <td style="padding: 8px 0; text-align: right; font-weight: 600;"><%= @metrics[:content_created_count] %>건</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #e5e7eb;">
+      <td style="padding: 8px 0; color: #6b7280;">발행 완료</td>
+      <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #059669;"><%= @metrics[:content_published_count] %>건</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #e5e7eb;">
+      <td style="padding: 8px 0; color: #6b7280;">고객 문의</td>
+      <td style="padding: 8px 0; text-align: right; font-weight: 600;"><%= @metrics[:inquiry_count] %>건</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #e5e7eb;">
+      <td style="padding: 8px 0; color: #6b7280;">사람 인계</td>
+      <td style="padding: 8px 0; text-align: right; font-weight: 600;"><%= @metrics[:handoff_count] %>건</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #6b7280;">AI 비용</td>
+      <td style="padding: 8px 0; text-align: right; font-weight: 600;"><%= @metrics[:ai_cost_krw] %>원</td>
+    </tr>
+  </table>
+
+  <h2 style="font-size: 16px; color: #111827; margin: 24px 0 12px 0;">💡 추천 개선</h2>
+  <ul style="color: #374151; font-size: 14px; line-height: 1.6;">
+    <% (@metrics[:improvement_suggestions] || []).each do |sug| %>
+      <li><%= sug %></li>
+    <% end %>
+  </ul>
+
+  <p style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 12px;">
+    본 메일은 자동 발송되었습니다. 대시보드에서 자세히 확인하세요.
+  </p>
+</div>
+</body>
+</html>

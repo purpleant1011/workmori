@@ -1,0 +1,44 @@
+<% content_for(:title, "상품 등록 — WorkMori") %>
+
+<header class="mb-6">
+  <h1 class="text-2xl font-bold text-slate-900">상품 등록</h1>
+  <p class="mt-1 text-sm text-slate-500">AI 직원이 추천·소개할 수 있도록 상품 정보를 등록합니다.</p>
+</header>
+
+<% if @product.errors.any? %>
+  <div class="mb-4 rounded-md bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-800">
+    <p class="font-semibold mb-1">입력값을 확인해주세요.</p>
+    <ul class="list-disc list-inside">
+      <% @product.errors.full_messages.each { |m| %><li><%= m %></li><% } %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: @product, url: app_products_path, method: :post, scope: :product, local: true, class: "space-y-5" do |f| %>
+  <div>
+    <label class="block text-sm font-medium text-slate-700">상품명</label>
+    <%= f.text_field :name, required: true, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-slate-700">설명</label>
+    <%= f.text_area :description, rows: 4, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+  </div>
+  <div class="grid grid-cols-2 gap-5">
+    <div>
+      <label class="block text-sm font-medium text-slate-700">기본 가격 (KRW)</label>
+      <%= f.number_field :base_price_krw, min: 0, step: 1000, required: true, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-700">소요 시간 (분)</label>
+      <%= f.number_field :duration_min, min: 0, step: 5, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+    </div>
+  </div>
+  <div class="flex items-center gap-2 pt-2">
+    <%= f.check_box :active, checked: @product.active != false, class: "rounded border-slate-300" %>
+    <label class="text-sm text-slate-700">활성 (고객에게 노출)</label>
+  </div>
+  <div class="flex items-center justify-between pt-4 border-t">
+    <a href="<%= app_products_path %>" class="text-sm text-slate-500 hover:underline">← 목록으로</a>
+    <%= f.submit "상품 등록", class: "rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 cursor-pointer" %>
+  </div>
+<% end %>

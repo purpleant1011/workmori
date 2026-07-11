@@ -1,0 +1,30 @@
+<% content_for :title, @case_study[:industry] %>
+<section class="py-12">
+  <div class="text-xs text-slate-500"><%= @case_study[:industry] %> · <%= @case_study[:client_role] %></div>
+  <h1 class="mt-2 text-4xl font-bold text-slate-900"><%= @case_study[:slug] %></h1>
+  <p class="mt-4 text-lg text-slate-700 max-w-3xl"><%= @case_study[:summary] %></p>
+</section>
+
+<section class="py-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+  <% @case_study[:metrics].each do |m| %>
+    <div class="p-4 rounded-lg bg-white shadow-sm text-center">
+      <div class="text-2xl font-bold text-slate-900"><%= m[:value] %></div>
+      <div class="text-sm text-slate-500 mt-1"><%= m[:label] %></div>
+    </div>
+  <% end %>
+</section>
+
+<section class="py-8 max-w-3xl space-y-4">
+  <% @case_study[:blocks].each do |block| %>
+    <div class="p-6 rounded-lg bg-white shadow-sm">
+      <h2 class="text-lg font-semibold text-slate-900"><%= block[:title] %></h2>
+      <p class="mt-2 text-slate-700 whitespace-pre-line"><%= block[:text] %></p>
+    </div>
+  <% end %>
+</section>
+
+<section class="py-8 max-w-3xl">
+  <div class="p-6 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+    ※ 본 사례는 운영자 검수 후 비식별화된 가상 자료입니다. 실제 이름·수치는 공개 동의를 받은 범위 내에서만 사용됩니다.
+  </div>
+</section>

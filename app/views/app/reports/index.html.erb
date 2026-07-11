@@ -1,0 +1,65 @@
+<% content_for :title do %>리포트<% end %>
+<div class="px-6 py-8 max-w-5xl mx-auto">
+  <h1 class="text-2xl font-semibold text-gray-900 mb-2">📊 리포트</h1>
+  <p class="text-sm text-gray-500 mb-6">일간·주간 자동 리포트와 배달 이력을 확인합니다.</p>
+
+  <section class="bg-white shadow rounded-lg p-6 mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-semibold text-gray-900">어제(기준일) 일간 리포트</h2>
+      <div class="flex gap-2">
+        <%= button_to "즉시 생성 (일간)", app_trigger_daily_reports_path, method: :post, class: "px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700" %>
+        <%= button_to "즉시 생성 (주간)", app_trigger_weekly_reports_path, method: :post, class: "px-3 py-1.5 text-sm bg-emerald-600 text-white rounded hover:bg-emerald-700" %>
+      </div>
+    </div>
+    <% today = @today_metrics %>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+      <div class="bg-gray-50 rounded p-3"><p class="text-gray-500 text-xs">콘텐츠 생성</p><p class="font-semibold text-lg"><%= today&.dig(:content_created_count) %>건</p></div>
+      <div class="bg-gray-50 rounded p-3"><p class="text-gray-500 text-xs">발행 완료</p><p class="font-semibold text-lg text-emerald-600"><%= today&.dig(:content_published_count) %>건</p></div>
+      <div class="bg-gray-50 rounded p-3"><p class="text-gray-500 text-xs">사람 인계</p><p class="font-semibold text-lg"><%= today&.dig(:handoff_count) %>건</p></div>
+      <div class="bg-gray-50 rounded p-3"><p class="text-gray-500 text-xs">안전 차단</p><p class="font-semibold text-lg text-rose-600"><%= today&.dig(:blocked_count) %>건</p></div>
+    </div>
+    <% suggestions = today&.dig(:improvement_suggestions) || [] %>
+    <% if suggestions.any? %>
+      <p class="text-sm font-medium text-gray-700 mt-4">💡 추천 개선</p>
+      <ul class="list-disc ml-5 mt-1 text-sm text-gray-600">
+        <% suggestions.each { |s| %><li><%= s %></li><% } %>
+      </ul>
+    <% else %>
+      <p class="text-sm text-gray-400 mt-4">📌 추천 개선 사항이 없습니다.</p>
+    <% end %>
+  </section>
+
+  <section class="bg-white shadow rounded-lg p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">주간 리포트</h2>
+    <% if @weekly_reports.any? %>
+      <table class="min-w-full text-sm">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="text-left px-3 py-2">시작일</th>
+            <th class="text-left px-3 py-2">종료일</th>
+            <th class="text-right px-3 py-2">생성</th>
+            <th class="text-right px-3 py-2">발행</th>
+            <th class="text-right px-3 py-2">인계</th>
+            <th class="text-right px-3 py-2">비용(원)</th>
+            <th class="text-left px-3 py-2">요약</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @weekly_reports.each do |r| %>
+            <tr class="border-t">
+              <td class="px-3 py-2"><%= r.week_start_on %></td>
+              <td class="px-3 py-2"><%= r.week_end_on %></td>
+              <td class="px-3 py-2 text-right"><%= r.content_created_count %></td>
+              <td class="px-3 py-2 text-right"><%= r.content_published_count %></td>
+              <td class="px-3 py-2 text-right"><%= r.handoff_count %></td>
+              <td class="px-3 py-2 text-right"><%= r.ai_cost_krw.to_i %></td>
+              <td class="px-3 py-2 text-xs text-gray-500"><%= r.summary %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="text-sm text-gray-400">아직 생성된 주간 리포트가 없습니다.</p>
+    <% end %>
+  </section>
+</div>

@@ -1,0 +1,19 @@
+<% content_for :title, "해지 신청 확인" %>
+<div class="mx-auto max-w-2xl space-y-6">
+  <header>
+    <h1 class="text-2xl font-bold tracking-tight text-slate-900">해지 신청 확인</h1>
+  </header>
+  <div class="rounded-lg border border-amber-300 bg-amber-50 p-6 shadow-sm">
+    <% if @req %>
+      <p class="text-sm text-slate-700">해지 요청 상태: <span class="font-semibold"><%= @req.state %></span></p>
+      <p class="mt-2 text-sm text-slate-700">사유: <%= @req.reason %></p>
+      <p class="mt-1 text-xs text-slate-500">접수 시각: <%= @req.created_at&.strftime("%Y-%m-%d %H:%M") %></p>
+    <% else %>
+      <p class="text-sm text-slate-700">아직 해지 요청이 없습니다.</p>
+    <% end %>
+    <div class="mt-4 flex gap-2">
+      <%= link_to "해지 신청 페이지로", app_new_termination_path, class: "rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500" %>
+      <%= link_to "대시보드", app_root_path, class: "rounded-md bg-white border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" %>
+    </div>
+  </div>
+</div>

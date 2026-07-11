@@ -1,0 +1,33 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  host: <%= ENV.fetch("PGHOST", "127.0.0.1") %>
+  port: <%= ENV.fetch("PGPORT", 5432) %>
+  username: <%= ENV.fetch("PGUSER") { `whoami`.strip } %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  timeout: 5000
+
+development:
+  <<: *default
+  database: workmori_development
+
+test:
+  <<: *default
+  database: workmori_test
+
+production:
+  primary: &primary_production
+    <<: *default
+    database: workmori_production
+  cache:
+    <<: *default
+    database: workmori_cache
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *default
+    database: workmori_queue
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *default
+    database: workmori_cable
+    migrations_paths: db/cable_migrate

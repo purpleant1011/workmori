@@ -1,0 +1,38 @@
+<% content_for :title, "AI 직원" %>
+<section class="py-12">
+  <h1 class="text-4xl font-bold text-slate-900">AI 직원</h1>
+  <p class="mt-4 text-lg text-slate-700 max-w-3xl">
+    사장님이 직접 고용하는 AI 직원. 지식·톤·일정을 기억하고 자동으로 초안을 만들고, 사람 검수를 거쳐 채널로 발송합니다.
+  </p>
+</section>
+
+<section class="py-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div class="p-6 rounded-lg bg-white shadow-sm">
+    <div class="text-sm text-slate-500">기능 1</div>
+    <h2 class="mt-1 text-xl font-semibold text-slate-900">지식 베이스</h2>
+    <p class="mt-2 text-slate-700">매장 FAQ, 약관, 시술 메뉴, 가격표를 업로드하면 AI 직원이 그 안에서만 답을 찾습니다. 환각(hallucination)을 원천 차단합니다.</p>
+  </div>
+  <div class="p-6 rounded-lg bg-white shadow-sm">
+    <div class="text-sm text-slate-500">기능 2</div>
+    <h2 class="mt-1 text-xl font-semibold text-slate-900">톤·품위·금지어</h2>
+    <p class="mt-2 text-slate-700">"차분한 존댓말" / "반말" 등 톤과 품위를 설정하고, 과장·허위 표현은 금지어로 자동 필터링합니다.</p>
+  </div>
+  <div class="p-6 rounded-lg bg-white shadow-sm">
+    <div class="text-sm text-slate-500">기능 3</div>
+    <h2 class="mt-1 text-xl font-semibold text-slate-900">자동 검수 후 발행</h2>
+    <p class="mt-2 text-slate-700">초안 → 안전성 자동 검수 → 확신도 평가 → 사람 검수(선택) → 채널 게시까지 한 번에 진행합니다.</p>
+  </div>
+</section>
+
+<section class="py-8">
+  <h2 class="text-2xl font-semibold text-slate-900 mb-4">이런 분들에게 좋습니다</h2>
+  <ul class="space-y-2 text-slate-700 max-w-2xl">
+    <li>✓ 매주 블로그·SNS 콘텐츠를 쓰느라 시간이 부족한 1인 사업자</li>
+    <li>✓ 채널(블로그/인스타/카카오채널/네이버 플레이스)을 분산 운영하는 매장</li>
+    <li>✓ 동일 FAQ를 하루에도 여러 번 답해야 하는 점주</li>
+    <li>✓ 검수 없이 자동 게시되는 것에 불안감을 느끼는 사장님</li>
+  </ul>
+  <div class="mt-6">
+    <%= link_to "요금제 보기 →", public_pricing_path, class: "text-emerald-700 font-semibold" %>
+  </div>
+</section>

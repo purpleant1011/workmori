@@ -1,0 +1,57 @@
+# Solid Queue recurring jobs
+# schedule 형식: every X minutes/hours/days, at Xam/pm every day, monday 등
+
+development:
+  # 시드/개발용 빠른 실행 — 매 10분 (production은 매일 1회)
+  automation_tick_dev:
+    class: "AutomationTickJob"
+    queue: default
+    schedule: every 10 minutes
+
+test:
+  automation_tick_test:
+    class: "AutomationTickJob"
+    queue: default
+    schedule: every 5 minutes
+
+production:
+  # 1) 자동화 규칙 — 매시간 정각 트리거
+  automation_tick_hourly:
+    class: "AutomationTickJob"
+    queue: default
+    schedule: at 0 minutes past every hour
+
+  # 2) 일간 리포트 — 매일 새벽 01:00 (전날 데이터 기반)
+  daily_report:
+    class: "DailyReportJob"
+    queue: default
+    schedule: at 1am every day
+
+  # 3) 주간 리포트 — 매주 월요일 08:00 (지난 주 데이터)
+  weekly_report:
+    class: "WeeklyReportJob"
+    queue: default
+    schedule: at 8am every monday
+
+  # 4) 미처리 문의 분류 — 매 30분
+  inquiry_classify:
+    class: "Inquiries::ClassifyJob"
+    queue: default
+    schedule: every 30 minutes
+
+  # 5) DataExport 완료 처리 — 매 1시간 (정시 30분)
+  data_export_pending:
+    class: "DataExportJob"
+    queue: default
+    schedule: at 30 minutes past every hour
+
+  # 6) Instagram/Threads 자동 응대 + 인사이트 — 매 6시간
+  engagement_tick:
+    class: "EngagementTickJob"
+    queue: default
+    schedule: at 0 minutes past every 6 hours
+
+  # 7) Solid Queue 자체 housekeeping — 매시간 12분
+  clear_solid_queue_finished_jobs:
+    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+    schedule: every hour at minute 12

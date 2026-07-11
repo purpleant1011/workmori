@@ -1,0 +1,57 @@
+<% content_for(:title, "결제 / 요금제 — WorkMori") %>
+<% krw = ->(n) { n.to_i.to_s.reverse.scan(/\d{1,3}/).join(",").reverse } %>
+<div class="max-w-5xl mx-auto p-6 space-y-6">
+  <h1 class="text-2xl font-bold">결제 / 요금제</h1>
+
+  <div class="rounded-xl border border-slate-200 bg-white p-5">
+    <h2 class="font-semibold mb-3">현재 구독</h2>
+    <% if @subscription %>
+      <p>플랜: <strong><%= @subscription.plan.name %></strong> (<%= krw.call(@subscription.monthly_price_krw) %>원 + VAT)</p>
+      <p>상태: <span class="<%= @subscription.state == 'active' ? 'text-emerald-700' : 'text-slate-500' %>"><%= @subscription.state %></span></p>
+      <p>현재 청구 기간: <%= @subscription.current_period_start %> ~ <%= @subscription.current_period_end %></p>
+      <p>다음 결제 예정일: <%= @subscription.next_billing_on || "없음" %></p>
+      <%= button_to "구독 해지", app_billing_cancel_path, method: :post, class: "mt-3 inline-flex items-center px-3 py-1.5 text-sm bg-rose-600 text-white rounded-md hover:bg-rose-700", form: { data: { turbo_confirm: "정말 해지하시겠습니까?" } } %>
+    <% else %>
+      <p class="text-slate-500">아직 구독 중인 요금제가 없습니다.</p>
+    <% end %>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 bg-white p-5">
+    <h2 class="font-semibold mb-3">요금제</h2>
+    <div class="grid md:grid-cols-3 gap-3">
+      <% @plans.each do |p| %>
+        <div class="border rounded-lg p-4 <%= @subscription && @subscription.plan_id == p.id ? 'border-emerald-500 ring-2 ring-emerald-100' : 'border-slate-200' %>">
+          <p class="font-semibold"><%= p.name %></p>
+          <p class="text-2xl font-bold mt-2"><%= krw.call(p.monthly_price_krw) %><span class="text-sm font-normal text-slate-500">원/월</span></p>
+          <p class="text-xs text-slate-500">+ VAT <%= krw.call(p.monthly_price_vat_krw) %>원</p>
+          <p class="text-sm text-slate-600 mt-2"><%= p.description %></p>
+          <%= button_to "구독", app_billing_subscribe_path(plan_id: p.id), method: :post, class: "mt-3 w-full px-3 py-2 bg-slate-900 text-white rounded-md hover:bg-slate-700" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 bg-white p-5">
+    <h2 class="font-semibold mb-3">청구서</h2>
+    <% if @invoices.any? %>
+      <table class="w-full text-sm">
+        <thead class="text-slate-500 text-left border-b">
+          <tr><th class="py-2">번호</th><th>기간</th><th>금액</th><th>상태</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% @invoices.each do |inv| %>
+            <tr class="border-b">
+              <td class="py-2"><%= inv.invoice_number %></td>
+              <td><%= inv.billing_period_start %> ~ <%= inv.billing_period_end %></td>
+              <td><%= krw.call(inv.final_amount_krw) %>원</td>
+              <td><span class="<%= inv.state == 'paid' ? 'text-emerald-700' : 'text-amber-600' %>"><%= inv.state %></span></td>
+              <td><%= link_to "보기", app_billing_invoice_path(inv), class: "text-slate-700 hover:underline" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="text-slate-500">아직 발행된 청구서가 없습니다.</p>
+    <% end %>
+  </div>
+</div>

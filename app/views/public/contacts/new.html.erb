@@ -1,0 +1,60 @@
+<% content_for :title, "문의" %>
+<section class="py-12">
+  <h1 class="text-4xl font-bold text-slate-900">문의</h1>
+  <p class="mt-4 text-lg text-slate-700 max-w-3xl">
+    서비스 도입, 가격, 데모 등 어떤 질문이든 편하게 남겨주세요.
+    영업일 기준 1~2일 안에 운영자가 회신드립니다.
+  </p>
+</section>
+
+<section class="py-8 max-w-2xl">
+  <% if @contact.errors.any? %>
+    <div class="mb-6 p-4 rounded-lg bg-rose-50 border border-rose-200">
+      <h2 class="text-rose-800 font-semibold">오류가 있습니다</h2>
+      <ul class="mt-2 text-sm text-rose-700 list-disc list-inside">
+        <% @contact.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with model: @contact, url: public_contact_path, local: true, class: "space-y-4 bg-white p-6 rounded-lg shadow-sm" do |f| %>
+    <div>
+      <%= f.label :name, "이름", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.text_field :name, required: true, class: "mt-1 block w-full rounded border-slate-300" %>
+    </div>
+    <div>
+      <%= f.label :email, "이메일", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.email_field :email, required: true, class: "mt-1 block w-full rounded border-slate-300" %>
+    </div>
+    <div>
+      <%= f.label :phone, "연락처", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.telephone_field :phone, class: "mt-1 block w-full rounded border-slate-300" %>
+    </div>
+    <div>
+      <%= f.label :subject, "제목", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.text_field :subject, required: true, class: "mt-1 block w-full rounded border-slate-300" %>
+    </div>
+    <div>
+      <%= f.label :body, "문의 내용", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.text_area :body, rows: 6, required: true, class: "mt-1 block w-full rounded border-slate-300" %>
+    </div>
+    <div class="flex items-center">
+      <%= f.check_box :consent_marketing, class: "rounded border-slate-300" %>
+      <%= f.label :consent_marketing, "운영자가 보내는 안내 메일을 받겠습니다 (선택).", class: "ml-2 text-sm text-slate-700" %>
+    </div>
+    <div class="pt-2">
+      <%= f.submit "문의 보내기", class: "px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-semibold" %>
+    </div>
+  <% end %>
+</section>
+
+<section class="py-10 max-w-2xl">
+  <h2 class="text-2xl font-semibold text-slate-900 mb-4">기타 안내</h2>
+  <div class="p-6 rounded-lg bg-slate-100 text-slate-700 space-y-2">
+    <p>• 이메일: <%= brand.contact_email %></p>
+    <p>• 운영시간: 평일 10:00–18:00 (주말/공휴일 휴무)</p>
+    <p>• 긴급한 민감 상담(의료·법률·금융)은 사람이 직접 응대합니다.</p>
+  </div>
+</section>

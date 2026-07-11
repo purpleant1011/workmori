@@ -1,0 +1,254 @@
+# Seeds for development only. All synthetic data.
+
+puts "[seeds] starting..."
+
+# === Platform staff ===
+admin = PlatformStaff.find_or_initialize_by(email_address: "platform-admin@workmori.example")
+admin.assign_attributes(
+  name: "가칭 운영자",
+  role: "super_admin",
+  password: "SuperSecret!23",
+  password_confirmation: "SuperSecret!23"
+)
+admin.save! unless admin.persisted?
+
+# Dev-login alias used by README / guides / verify scripts.
+ops = PlatformStaff.find_or_initialize_by(email_address: "ops@workmori.example")
+ops.assign_attributes(
+  name: "데모 운영자",
+  role: "ops",
+  password: "OpsPass!23",
+  password_confirmation: "OpsPass!23"
+)
+ops.save! unless ops.persisted?
+
+puts "[seeds] platform-admin: platform-admin@workmori.example  (password: SuperSecret!23)"
+puts "[seeds] platform-ops   : ops@workmori.example            (password: OpsPass!23)"
+
+# === Industry templates (public, non-customer seeds) ===
+INDUSTRY_SEEDS = [
+  { code: "skincare",     industry_kind: "beauty",  name: "피부관리 / 화장품" },
+  { code: "fnb-cafe",     industry_kind: "fnb",     name: "카페 / 음료" },
+  { code: "shop-retail",  industry_kind: "retail",  name: "소매/편집숍" },
+  { code: "bookkeeping",  industry_kind: "service", name: "세무 / 회계" },
+  { code: "edu-local",    industry_kind: "edu",     name: "학원 / 교육" },
+  { code: "etc-service",  industry_kind: "service", name: "기타 서비스" }
+].freeze
+
+INDUSTRY_SEEDS.each do |seed|
+  rec = IndustryTemplate.find_or_initialize_by(industry_code: seed[:code])
+      rec.assign_attributes(
+    slug: seed[:code],
+    industry_kind: seed[:industry_kind],
+    display_name: seed[:name],
+    version: "v1",
+    starter_brand_profile: {},
+    starter_ai_employee:    { display_name: "#{seed[:name]} AI 직원", tone: "calm_polite", honorific: "honorific" },
+    starter_automations:    [{ name: "주간 다이제스트 자동 생성", intent_kind: "weekly_digest" }],
+    starter_guardrails:     [{ patterns: %w[100% 즉시 확실 보장], action: "block" }]
+  )
+  rec.slug ||= seed[:code]
+  rec.industry_kind ||= seed[:industry_kind]
+  rec.save! unless rec.persisted?
+end
+
+# Backfill slug + industry_kind for any existing rows that pre-date the column adds.
+IndustryTemplate.where(slug: nil).find_each do |rec|
+  rec.update_column(:slug, rec.industry_code)
+end
+IndustryTemplate.where(industry_kind: nil).find_each do |rec|
+  fallback = INDUSTRY_SEEDS.find { |s| s[:code] == rec.industry_code }
+  rec.update_column(:industry_kind, fallback ? fallback[:industry_kind] : "general")
+end
+IndustryTemplate.where(display_name: nil).find_each do |rec|
+  fallback = INDUSTRY_SEEDS.find { |s| s[:code] == rec.industry_code }
+  rec.update_column(:display_name, fallback ? fallback[:name] : rec.industry_code)
+end
+
+# === Plans ===
+plan_beta = Plan.find_or_initialize_by(code: "beta-monthly")
+plan_beta.assign_attributes(
+  name: "베타 월정액",
+  description: "베타 기간 월정액 요금제 (가칭).",
+  monthly_price_krw: 300_000,
+  monthly_price_vat_krw: 30_000,
+  features: %w[ai_employee accounts_1 weekly_reports basic_automation],
+  active: true
+)
+plan_beta.save! unless plan_beta.persisted?
+
+plan_addon = Plan.find_or_initialize_by(code: "add-on-pack")
+plan_addon.assign_attributes(
+  name: "월정액 + 추가 패키지",
+  description: "월정액 + 추가 패키지.",
+  monthly_price_krw: 450_000,
+  monthly_price_vat_krw: 45_000,
+  features: %w[ai_employee accounts_1 weekly_reports extended_automation priority_support],
+  active: true
+)
+plan_addon.save! unless plan_addon.persisted?
+
+# === Demo account + owner (development only) ===
+acct = Account.find_or_initialize_by(slug: "demo-skincare")
+acct.assign_attributes(
+  name: "데모 피부관리원",
+  status: "active",
+  operator_managed: true,
+  operator_managed_by_email: "platform-admin@workmori.example",
+  timezone: "Asia/Seoul",
+  country: "KR",
+  settings_json: { onboarding_state: "demo-seed", consents: { marketing: false } }
+)
+acct.save! unless acct.persisted?
+
+owner = User.find_or_initialize_by(email_address: "owner@demo.example")
+owner.assign_attributes(
+  account: acct,
+  name: "김사장",
+  role: "owner",
+  locale: "ko",
+  password: "OwnerPass!23",
+  password_confirmation: "OwnerPass!23"
+)
+owner.save! unless owner.persisted?
+
+Membership.find_or_create_by!(user: owner, account: acct) { |m| m.role = "owner" }
+
+bp = BusinessProfile.find_or_initialize_by(account: acct)
+bp.assign_attributes(
+  industry_code: "beauty",
+  industry_subcategory: "skincare",
+  legal_name: "데모피부관리원",
+  trade_name: "데모 피부관리원",
+  owner_name: "김사장",
+  phone: "010-0000-0000",
+  public_email: "demo-skincare@example.com",
+  address: "강원도 청라시 가칭동 123",
+  region_label: "강원 / 청라",
+  timezone: "Asia/Seoul",
+  brand_intro: "데모용 시드 데이터. 실제 계정과 분리해주세요.",
+  onboarding_step: 2,
+  onboarding_complete: false,
+  operator_managed: true,
+  business_hours_json: { mon: "10:00-20:00", tue: "10:00-20:00", wed: "closed", thu: "10:00-20:00", fri: "10:00-20:00", sat: "10:00-18:00", sun: "closed" },
+  products_json: [{ name: "기본관리", price_krw: 70000 }],
+  services_json: [{ name: "기본관리", duration_min: 60 }],
+  faqs_json: [{ q: "예약은 어떻게 하나요?", a: "전화 또는 카카오 채널로 안내드립니다." }],
+  forbidden_phrases_json: %w[100% 안전 보장 의사의진료],
+  forbidden_topics_json: %w[시술후100%안전 보장의료기관할인],
+  preferred_channels_json: %w[blog naver],
+  escalation_rules_json: [{ topic: "환불/클레임", handoff_to: "human" }]
+)
+bp.save! unless bp.persisted?
+
+employee = AiEmployee.find_or_initialize_by(account: acct, name: "케이 마케팅")
+employee.assign_attributes(
+  role_label: "마케팅",
+  industry_expertise: "skin_care",
+  tone: "calm_professional",
+  friendliness: 3,
+  expertise_level: 3,
+  proactiveness: 2,
+  honorific: "formal",
+  sentence_length: 60,
+  forbidden_phrases_json: %w[100% 안전 보장 확실],
+  can_answer_topics_json: %w[피부관리 예약 가격 FAQ 영업시간],
+  must_handoff_topics_json: %w[환불 클레임 의료 민감피부],
+  work_days_json: %w[mon tue wed thu fri sat],
+  work_hours_json: { start: "10:00", end: "20:00" },
+  daily_post_quota: 2,
+  weekly_post_quota: 8,
+  approval_mode: "owner_review",
+  monthly_token_budget: 200_000,
+  daily_token_budget: 10_000,
+  monthly_cost_budget_krw: 50_000,
+  daily_cost_budget_krw: 3_000,
+  channel_behaviors_json: { blog: "long", naver: "short" },
+  natural_language_instructions: "한국어로 정중하게 응답. 진실성 유지. 출처가 있으면 인용.",
+  status: "active"
+)
+employee.save! unless employee.persisted?
+
+# === Sample prompts (used by templates) ===
+sample_prompts = [
+  { code: "weekly_digest_v1", purpose: "weekly_digest", system_prompt: "주간 다이제스트 요원입니다.", user_prompt_template: "주제: {{topic}}", output_schema: "{ title: str, body: str, cta: str }" },
+  { code: "reply_visitor_v1", purpose: "reply_visitor", system_prompt: "방문자 응대 요원입니다.", user_prompt_template: "방문자 메시지: {{message}}", output_schema: "{ reply: str, handoff: bool }" },
+  { code: "classify_inquiry_v1", purpose: "classify_inquiry", system_prompt: "문의 분류 요원입니다.", user_prompt_template: "문의: {{body}}", output_schema: "{ kind: str, score: float }" }
+]
+sample_prompts.each do |cfg|
+  rec = PromptTemplate.find_or_initialize_by(name: cfg[:code])
+  rec.assign_attributes(
+    version: "v1",
+    purpose: cfg[:purpose],
+    system_prompt: cfg[:system_prompt],
+    user_prompt_template: cfg[:user_prompt_template],
+    output_schema: cfg[:output_schema],
+    active: true
+  )
+  rec.save! unless rec.persisted?
+end
+
+# === Model catalog (stub providers) ===
+MODELS = [
+  { code: "local-stub",         provider: "local", kind: "llm", display_name: "Local Stub",         active: true,
+    api_model_name: "stub",     context_window: 4000,  max_output_tokens: 800,
+    input_price_per_1k_krw: 0,  output_price_per_1k_krw: 0, image_price_per_unit_krw: 0,
+    training_opt_out: true, data_residency_region: "kr", capabilities: { stub: true } },
+  { code: "openai-gpt-4o",      provider: "openai", kind: "llm", display_name: "OpenAI gpt-4o",     active: false,
+    api_model_name: "gpt-4o",   context_window: 128000, max_output_tokens: 4096,
+    input_price_per_1k_krw: 5,  output_price_per_1k_krw: 15, image_price_per_unit_krw: 0,
+    training_opt_out: true, data_residency_region: "us", capabilities: { vision: true } },
+  { code: "anthropic-sonnet",   provider: "anthropic", kind: "llm", display_name: "Anthropic Sonnet", active: false,
+    api_model_name: "claude-3-5-sonnet", context_window: 200000, max_output_tokens: 8000,
+    input_price_per_1k_krw: 5, output_price_per_1k_krw: 25, image_price_per_unit_krw: 0,
+    training_opt_out: true, data_residency_region: "us", capabilities: { vision: true } }
+]
+MODELS.each do |m|
+  rec = ModelCatalogEntry.find_or_initialize_by(code: m[:code])
+  rec.assign_attributes(m.except(:code))
+  rec.save! unless rec.persisted?
+end
+
+# === Feature flags ===
+[
+  { key: "invite_only_signup",         enabled: false, value: false },
+  { key: "show_ai_employee_v2",        enabled: true,  value: true },
+  { key: "channels_blog_default",      enabled: true,  value: true },
+  { key: "channels_instagram_default", enabled: true,  value: true }
+].each do |flag|
+  rec = FeatureFlag.find_or_initialize_by(key: flag[:key], account_id: nil)
+  rec.assign_attributes(enabled: flag[:enabled], value: flag[:value])
+  rec.save! unless rec.persisted?
+end
+
+# === Demo automation rule + schedule ===
+rule = AutomationRule.find_or_initialize_by(account: acct, name: "주간 다이제스트 자동 게시")
+rule.assign_attributes(
+  ai_employee: employee,
+  intent_kind: "post",
+  natural_language: "매주 화요일 9시에 한 주 인기 FAQ를 정리해 초안을 작성해 검수 채널에 올려주세요.",
+  structured_plan: { cadence: "weekly_tue_9am", topic: "popular_faqs" },
+  constraints: { requires_human_approval: true, max_per_week: 1, channels: ["blog"] },
+  status: "active"
+)
+rule.save! unless rule.persisted?
+
+sched = AutomationSchedule.find_or_initialize_by(automation_rule: rule)
+sched.assign_attributes(
+  account: acct,
+  cadence: "weekly",
+  cron_expression: "30 9 * * MON",
+  next_run_at: 7.days.from_now,
+  quiet_hours: { start: "20:00", end: "09:00" }
+)
+sched.save! unless sched.persisted?
+
+# === Notification ===
+Notification.find_or_create_by!(account: acct, kind: "welcome") do |n|
+  n.title = "워크모리 가입을 환영합니다"
+  n.body = "데모 시드 데이터입니다. 실제 운영 계정과 분리하세요."
+  n.severity = "low"
+end
+
+puts "[seeds] done. Sign-in (business app): owner@demo.example / OwnerPass!23"
+puts "[seeds] done. Sign-in (platform admin): platform-admin@workmori.example / SuperSecret!23"

@@ -1,0 +1,37 @@
+<% content_for :title do %>자동화 규칙 - 수정<% end %>
+<% sched = @rule.automation_schedules.first %>
+<div class="px-6 py-8 max-w-3xl mx-auto">
+  <h1 class="text-2xl font-semibold mb-6">✏️ 자동화 규칙 수정</h1>
+  <%= form_with model: @rule, url: app_automation_rule_path(@rule), method: :patch, local: true, class: "space-y-4 bg-white shadow rounded-lg p-6" do |f| %>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">규칙 이름</label>
+      <%= f.text_field :name, required: true, class: "w-full px-3 py-2 border rounded" %>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">자연어 설명</label>
+      <%= f.text_area :natural_language, rows: 3, class: "w-full px-3 py-2 border rounded" %>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">담당 AI 직원</label>
+      <%= f.collection_select :ai_employee_id, @ai_employees, :id, :name, {}, { class: "w-full px-3 py-2 border rounded" } %>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">주기</label>
+        <select name="cadence" class="w-full px-3 py-2 border rounded">
+          <% %w[hourly daily weekly monthly cron one_off].each do |k| %>
+            <option value="<%= k %>" <%= "selected" if k == (sched&.cadence || "daily") %>><%= k %></option>
+          <% end %>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">현재 다음 실행</label>
+        <p class="px-3 py-2 border rounded bg-gray-50 text-sm"><%= sched&.next_run_at&.strftime("%Y-%m-%d %H:%M") || "(미설정)" %></p>
+      </div>
+    </div>
+    <div class="flex gap-2 pt-4">
+      <%= f.submit "저장", class: "px-4 py-2 bg-emerald-600 text-white rounded" %>
+      <%= button_to "삭제", app_automation_rule_path(@rule), method: :delete, data: { turbo_confirm: "정말 삭제?" }, class: "px-4 py-2 bg-rose-100 text-rose-700 rounded ml-auto" %>
+    </div>
+  <% end %>
+</div>

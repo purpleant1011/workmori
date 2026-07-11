@@ -1,0 +1,25 @@
+<% content_for(:title, "#{@page[:title]} — WorkMori") %>
+
+<section class="mx-auto max-w-3xl px-6 py-16">
+  <header class="mb-8">
+    <p class="text-xs uppercase tracking-widest text-slate-500">Legal</p>
+    <h1 class="mt-2 text-3xl font-bold text-slate-900"><%= @page[:title] %></h1>
+  </header>
+
+  <article class="prose prose-slate max-w-none">
+    <p class="text-base text-slate-700 leading-relaxed"><%= @page[:body] %></p>
+  </article>
+
+  <div class="mt-12 rounded-md bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-600">
+    <p class="font-semibold text-slate-700 mb-1">공식 본문은 운영자 검수 후 게시됩니다.</p>
+    <p>본 페이지는 워크모리 정책의 골격을 미리 안내드리기 위한 요약입니다. 시행 시점은 별도 공지합니다.</p>
+  </div>
+
+  <nav class="mt-10 flex flex-wrap gap-2 text-xs">
+    <% Public::PagesController::LEGAL.each_key do |key| %>
+      <a href="<%= public_page_path(key) %>" class="rounded-full <%= key == params[:slug] ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' %> px-3 py-1">
+        <%= Public::PagesController::LEGAL[key][:title] %>
+      </a>
+    <% end %>
+  </nav>
+</section>

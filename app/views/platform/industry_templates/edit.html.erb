@@ -1,0 +1,30 @@
+<% content_for(:title, "산업 템플릿 (industry_templates) 수정 — WorkMori 플랫폼") %>
+<header class="mb-6"><h1 class="text-2xl font-bold text-slate-900">산업 템플릿 (industry_templates) 수정 #<%= @industry.id %></h1></header>
+<%= form_with model: @industry, url: platform_industry_template_path(@industry), method: :patch, local: true, class: "space-y-4 max-w-2xl" do |f| %>
+  <div class="grid grid-cols-2 gap-3">
+    <div>
+      <%= f.label :industry_code, "산업 코드", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.text_field :industry_code, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+    </div>
+    <div>
+      <%= f.label :industry_kind, "산업 종류", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.text_field :industry_kind, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+    </div>
+    <div>
+      <%= f.label :slug, "슬러그", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.text_field :slug, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+    </div>
+    <div>
+      <%= f.label :version, "버전", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.number_field :version, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+    </div>
+  </div>
+  <div>
+    <%= f.label :display_name, "표시 이름", class: "block text-sm font-medium text-slate-700" %>
+    <%= f.text_field :display_name, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+  </div>
+  <div class="flex gap-2">
+    <%= f.submit "저장", class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700" %>
+    <%= link_to "취소", platform_industry_template_path(@industry), class: "inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" %>
+  </div>
+<% end %>

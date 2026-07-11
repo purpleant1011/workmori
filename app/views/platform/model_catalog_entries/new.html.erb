@@ -1,0 +1,34 @@
+<% content_for(:title, "모델 카탈로그 신규 — WorkMori 플랫폼") %>
+<header class="mb-6"><h1 class="text-2xl font-bold text-slate-900">모델 카탈로그 신규</h1></header>
+<%= form_with model: @entry, url: platform_model_catalog_entries_path, method: :post, local: true, class: "space-y-4 max-w-2xl" do |f| %>
+  <div class="grid grid-cols-2 gap-3">
+    <div>
+      <%= f.label :code, "코드", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.text_field :code, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+    </div>
+    <div>
+      <%= f.label :provider, "공급자", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.text_field :provider, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+    </div>
+    <div>
+      <%= f.label :api_model_name, "API 모델명", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.text_field :api_model_name, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+    </div>
+    <div>
+      <%= f.label :context_window, "컨텍스트 윈도우", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.number_field :context_window, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+    </div>
+    <div>
+      <%= f.label :max_output_tokens, "최대 출력 토큰", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.number_field :max_output_tokens, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+    </div>
+    <div>
+      <%= f.label :active, "활성", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.check_box :active, class: "mt-2" %>
+    </div>
+  </div>
+  <div class="flex gap-2">
+    <%= f.submit "생성", class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700" %>
+    <%= link_to "취소", platform_model_catalog_entries_path, class: "inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" %>
+  </div>
+<% end %>

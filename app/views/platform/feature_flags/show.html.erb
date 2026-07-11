@@ -1,0 +1,24 @@
+<% content_for(:title, "기능 플래그 상세 — WorkMori 플랫폼") %>
+<header class="mb-6">
+  <h1 class="text-2xl font-bold text-slate-900">기능 플래그 상세</h1>
+  <p class="mt-1 text-sm text-slate-500">키: <code class="rounded bg-slate-100 px-1.5 py-0.5 text-xs"><%= @flag.key %></code></p>
+</header>
+<dl class="grid grid-cols-2 gap-4 max-w-2xl rounded-md border border-slate-200 bg-white p-4 text-sm">
+  <div>
+    <dt class="font-medium text-slate-500">키</dt>
+    <dd class="mt-1 text-slate-900"><%= @flag.key %></dd>
+  </div>
+  <div>
+    <dt class="font-medium text-slate-500">활성</dt>
+    <dd class="mt-1"><%= @flag.enabled ? "✓ 활성" : "✗ 비활성" %></dd>
+  </div>
+  <div class="col-span-2">
+    <dt class="font-medium text-slate-500">값</dt>
+    <dd class="mt-1"><pre class="rounded bg-slate-50 p-2 text-xs"><%= @flag.value.inspect %></pre></dd>
+  </div>
+</dl>
+<div class="mt-4 flex gap-2">
+  <%= link_to "수정", edit_platform_feature_flag_path(@flag), class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700" %>
+  <%= link_to "목록", platform_feature_flags_path, class: "inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" %>
+  <%= button_to "삭제", platform_feature_flag_path(@flag), method: :delete, data: { turbo_confirm: "삭제하시겠습니까?" }, class: "inline-flex items-center rounded-md border border-rose-300 px-4 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" %>
+</div>

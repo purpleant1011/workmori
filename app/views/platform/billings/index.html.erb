@@ -1,0 +1,65 @@
+<% content_for :title, "플랫폼 청구/결제 관리" %>
+<% krw = ->(n) { n.to_i.to_s.reverse.scan(/\d{1,3}/).join(",").reverse } %>
+<div class="max-w-6xl mx-auto p-6 space-y-6">
+  <h1 class="text-2xl font-bold">플랫폼 청구/결제 관리</h1>
+
+  <section class="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+    <h2 class="font-semibold">요금제 (Plan)</h2>
+    <table class="w-full text-sm">
+      <thead><tr class="text-left text-slate-500"><th>Code</th><th>이름</th><th>월 금액</th><th>VAT</th><th>상태</th></tr></thead>
+      <tbody>
+        <% @plans.each do |p| %>
+          <tr class="border-t"><td class="py-2"><%= p.code %></td><td><%= p.name %></td><td><%= krw.call(p.monthly_price_krw) %>원</td><td><%= krw.call(p.monthly_price_vat_krw) %>원</td><td><%= p.active ? "활성" : "비활성" %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+    <h2 class="font-semibold">계약 (ContractTerm) — 최근 50</h2>
+    <table class="w-full text-sm">
+      <thead><tr class="text-left text-slate-500"><th>번호</th><th>계정</th><th>테스트 기간</th><th>공식 시작</th><th>보증금</th><th>상태</th></tr></thead>
+      <tbody>
+        <% @contracts.each do |c| %>
+          <tr class="border-t"><td class="py-2"><%= c.contract_code %></td><td><%= c.account_id %></td><td><%= c.test_started_on %> ~ <%= c.test_ends_on %></td><td><%= c.official_service_started_on %></td><td><%= krw.call(c.deposit_amount_krw) %>원</td><td><%= c.status %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+    <h2 class="font-semibold">구독 (Subscription) — 최근 50</h2>
+    <table class="w-full text-sm">
+      <thead><tr class="text-left text-slate-500"><th>계정</th><th>플랜</th><th>상태</th><th>기간</th><th>월 금액</th></tr></thead>
+      <tbody>
+        <% @subscriptions.each do |s| %>
+          <tr class="border-t"><td class="py-2">#<%= s.account_id %></td><td><%= s.plan&.name %></td><td><%= s.state %></td><td><%= s.current_period_start %> ~ <%= s.current_period_end %></td><td><%= krw.call(s.monthly_price_krw) %>원</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+    <h2 class="font-semibold">청구서 (Invoice) — 최근 50</h2>
+    <table class="w-full text-sm">
+      <thead><tr class="text-left text-slate-500"><th>번호</th><th>계정</th><th>발행일</th><th>금액</th><th>상태</th><th>결제일</th></tr></thead>
+      <tbody>
+        <% @invoices.each do |i| %>
+          <tr class="border-t"><td class="py-2"><%= i.invoice_number %></td><td>#<%= i.account_id %></td><td><%= i.issued_on %></td><td><%= krw.call(i.final_amount_krw) %>원</td><td><%= i.state %></td><td><%= i.paid_on || "-" %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+    <h2 class="font-semibold">결제 (Payment) — 최근 50</h2>
+    <table class="w-full text-sm">
+      <thead><tr class="text-left text-slate-500"><th>계정</th><th>청구서</th><th>금액</th><th>상태</th><th>TXN</th><th>결제 시각</th></tr></thead>
+      <tbody>
+        <% @payments.each do |p| %>
+          <tr class="border-t"><td class="py-2">#<%= p.account_id %></td><td><%= p.invoice&.invoice_number %></td><td><%= krw.call(p.amount_krw) %>원</td><td><%= p.state %></td><td class="text-xs"><%= p.provider_txn_id %></td><td><%= p.paid_at&.strftime("%Y-%m-%d %H:%M") %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+</div>

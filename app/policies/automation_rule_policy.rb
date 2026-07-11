@@ -1,0 +1,1 @@
+class AutomationRulePolicy < ApplicationPolicy; end

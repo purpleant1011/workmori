@@ -1,0 +1,46 @@
+<% content_for(:title, "FAQ 등록 — WorkMori") %>
+
+<header class="mb-6">
+  <h1 class="text-2xl font-bold text-slate-900">FAQ 등록</h1>
+  <p class="mt-1 text-sm text-slate-500">자주 받는 질문과 표준 답변을 등록하면, AI 직원이 응답할 때 참고합니다.</p>
+</header>
+
+<% if @faq.errors.any? %>
+  <div class="mb-4 rounded-md bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-800">
+    <p class="font-semibold mb-1">입력값을 확인해주세요.</p>
+    <ul class="list-disc list-inside">
+      <% @faq.errors.full_messages.each { |m| %><li><%= m %></li><% } %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: @faq, url: app_faqs_path, method: :post, scope: :faq, local: true, class: "space-y-5" do |f| %>
+  <div>
+    <label class="block text-sm font-medium text-slate-700">질문</label>
+    <%= f.text_field :question, required: true, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-slate-700">답변</label>
+    <%= f.text_area :answer, rows: 5, required: true, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-slate-700">태그 (쉼표 구분)</label>
+    <%= f.text_field :tags_json, placeholder: "예: 가격, 영업시간, 예약", class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+  </div>
+  <div class="grid grid-cols-2 gap-5">
+    <div>
+      <label class="block text-sm font-medium text-slate-700">민감도</label>
+      <%= f.select :risk_level, [["낮음 (low)", "low"], ["보통 (medium)", "medium"], ["높음 (high)", "high"]], { selected: @faq.risk_level || "low" }, class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+    </div>
+    <div class="flex items-end">
+      <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+        <%= f.check_box :active, checked: @faq.active != false, class: "rounded border-slate-300" %>
+        활성
+      </label>
+    </div>
+  </div>
+  <div class="flex items-center justify-between pt-4 border-t">
+    <a href="<%= app_faqs_path %>" class="text-sm text-slate-500 hover:underline">← 목록으로</a>
+    <%= f.submit "FAQ 등록", class: "rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 cursor-pointer" %>
+  </div>
+<% end %>

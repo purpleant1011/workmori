@@ -1,0 +1,44 @@
+<% content_for(:title, "매직 링크 로그인 — WorkMori") %>
+
+<section class="mx-auto max-w-md px-6 py-16">
+  <header class="mb-8 text-center">
+    <h1 class="text-3xl font-bold text-slate-900">매직 링크 로그인</h1>
+    <p class="mt-2 text-sm text-slate-600">가입한 이메일을 입력하면 일회용 로그인 링크를 보내드립니다.</p>
+  </header>
+
+  <% if flash[:alert] %>
+    <div class="mb-4 rounded-md bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-800">
+      <%= flash[:alert] %>
+    </div>
+  <% end %>
+  <% if flash[:notice] %>
+    <div class="mb-4 rounded-md bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
+      <%= flash[:notice] %>
+    </div>
+  <% end %>
+
+  <%= form_with url: user_magic_link_create_path, method: :post, local: true, class: "space-y-5" do |f| %>
+    <div>
+      <label for="email" class="block text-sm font-medium text-slate-700">이메일</label>
+      <%= f.email_field :email,
+            value: @email,
+            class: "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500",
+            placeholder: "owner@example.com",
+            autocomplete: "email",
+            required: true %>
+    </div>
+
+    <%= f.submit "매직 링크 발송",
+          class: "w-full rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 cursor-pointer" %>
+  <% end %>
+
+  <div class="mt-6 flex items-center justify-between text-sm">
+    <a href="<%= new_user_session_path %>" class="text-indigo-600 hover:underline">비밀번호 로그인으로 돌아가기</a>
+    <a href="<%= new_signup_path %>" class="text-slate-500 hover:underline">회원가입</a>
+  </div>
+
+  <div class="mt-10 rounded-md bg-slate-50 border border-slate-200 px-4 py-3 text-xs text-slate-600">
+    <p>이메일은 가입 여부와 무관하게 동일한 응답을 반환합니다(계정 존재 누설 방지).</p>
+    <p class="mt-1">개발 환경에서는 응답 JSON에 <code class="rounded bg-slate-200 px-1 py-0.5">dev_url</code>이 함께 반환됩니다.</p>
+  </div>
+</section>

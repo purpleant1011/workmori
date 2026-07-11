@@ -1,0 +1,50 @@
+<% content_for :title, "워크모리 소개" %>
+<section class="py-12">
+  <h1 class="text-4xl font-bold text-slate-900">워크모리 소개</h1>
+  <p class="mt-4 text-lg text-slate-700 max-w-3xl">
+    <%= brand.brand_name %>는 사장님의 일을 기억하고 스스로 이어가는 AI 직원입니다.
+    홍보·마케팅·고객 응대를 한 명분의 시너지로 확장하세요.
+  </p>
+</section>
+
+<section class="py-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="p-6 rounded-lg bg-white shadow-sm">
+    <h2 class="text-xl font-semibold text-slate-900">우리가 해결하는 문제</h2>
+    <p class="mt-2 text-slate-700">
+      1인 사업장과 소규모 매장은 홍보 콘텐츠 작성, 채널별 맞춤 게시, FAQ 응대에 매주 수십 시간을 씁니다.
+      워크모리는 그 시간을 4분의 1로 줄여드립니다.
+    </p>
+  </div>
+  <div class="p-6 rounded-lg bg-white shadow-sm">
+    <h2 class="text-xl font-semibold text-slate-900">우리의 약속</h2>
+    <p class="mt-2 text-slate-700">
+      모든 자동 발행에는 사람 검수가 끼어듭니다.
+      민감한 상담(의료·법률·금융)은 즉시 사람에게 연결합니다.
+      허위 후기·성과 보장·과장 광고는 일절 하지 않습니다.
+    </p>
+  </div>
+</section>
+
+<section class="py-8">
+  <h2 class="text-2xl font-semibold text-slate-900 mb-4">핵심 원칙</h2>
+  <ol class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <li class="p-5 bg-white rounded-lg shadow-sm">
+      <div class="text-sm text-slate-500">원칙 1</div>
+      <div class="font-semibold mt-1">사람 검수 우선</div>
+      <p class="text-sm text-slate-600 mt-2">모든 자동 게시는 운영자 또는 사장님 검수 후 진행합니다.</p>
+    </li>
+    <li class="p-5 bg-white rounded-lg shadow-sm">
+      <div class="text-sm text-slate-500">원칙 2</div>
+      <div class="font-semibold mt-1">민감 상담 사람 연결</div>
+      <p class="text-sm text-slate-600 mt-2">의료·법률·금융 등 민감 영역은 즉시 사람 상담으로 전환합니다.</p>
+    </li>
+    <li class="p-5 bg-white rounded-lg shadow-sm">
+      <div class="text-sm text-slate-500">원칙 3</div>
+      <div class="font-semibold mt-1">투명한 기록</div>
+      <p class="text-sm text-slate-600 mt-2">모든 발행·응대·결제는 로그로 기록되어 사업자가 확인 가능합니다.</p>
+    </li>
+  </ol>
+  <div class="mt-6">
+    <%= link_to "원칙 전체 보기 →", public_principles_path, class: "text-emerald-700 font-semibold" %>
+  </div>
+</section>

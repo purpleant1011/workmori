@@ -1,0 +1,56 @@
+<% content_for :title, "내보내기 상세 ##{@export.id}" %>
+<div class="max-w-4xl mx-auto px-4 py-6">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-2xl font-bold">내보내기 상세 <span class="text-slate-400 text-base">#<%= @export.id %></span></h1>
+    <%= link_to "목록으로", app_data_exports_path, class: "text-sm text-blue-600 hover:underline" %>
+  </div>
+
+  <div class="rounded-lg border bg-white p-5 shadow-sm mb-6">
+    <dl class="grid grid-cols-2 gap-3 text-sm">
+      <div><dt class="text-slate-500">상태</dt><dd class="font-medium"><%= @export.state %></dd></div>
+      <div><dt class="text-slate-500">종류 / 형식</dt><dd class="font-medium"><%= @export.kind %> / <%= @export.format %></dd></div>
+      <div><dt class="text-slate-500">요청시각</dt><dd><%= @export.requested_at&.strftime("%Y-%m-%d %H:%M:%S") || "—" %></dd></div>
+      <div><dt class="text-slate-500">완료시각</dt><dd><%= @export.ready_at&.strftime("%Y-%m-%d %H:%M:%S") || "—" %></dd></div>
+      <div><dt class="text-slate-500">파일 크기</dt><dd><%= @export.file_size_human %></dd></div>
+      <div><dt class="text-slate-500">만료시각</dt><dd><%= @export.expires_at&.strftime("%Y-%m-%d %H:%M") || "—" %></dd></div>
+      <div class="col-span-2"><dt class="text-slate-500">SHA-256</dt><dd class="font-mono text-xs break-all"><%= @export.checksum_sha256 || "—" %></dd></div>
+      <div class="col-span-2"><dt class="text-slate-500">저장 경로</dt><dd class="font-mono text-xs break-all text-slate-600"><%= @export.storage_path || "—" %></dd></div>
+    </dl>
+
+    <% if @export.error_message.present? %>
+      <div class="mt-4 rounded border border-rose-200 bg-rose-50 text-rose-800 text-sm p-3">
+        <strong>에러:</strong> <%= @export.error_message %>
+      </div>
+    <% end %>
+
+    <div class="mt-5 flex gap-2">
+      <% if @export.downloadable? %>
+        <%= link_to "다운로드", app_download_data_export_path(@export), class: "px-4 py-2 rounded bg-emerald-600 text-white text-sm hover:bg-emerald-500" %>
+      <% else %>
+        <span class="px-4 py-2 rounded bg-slate-200 text-slate-500 text-sm">다운로드 불가</span>
+      <% end %>
+      <%= button_to "삭제", app_data_export_path(@export), method: :delete, form: { data: { turbo_confirm: "정말 삭제할까요?" } }, class: "px-4 py-2 rounded bg-rose-600 text-white text-sm hover:bg-rose-500" %>
+    </div>
+  </div>
+
+  <div class="rounded-lg border bg-white shadow-sm overflow-hidden">
+    <div class="bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">테이블별 행 수</div>
+    <table class="min-w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600">
+        <tr><th class="text-left px-3 py-2">테이블</th><th class="text-right px-3 py-2">행 수</th></tr>
+      </thead>
+      <tbody class="divide-y">
+        <% if @export.row_counts_hash.any? %>
+          <% @export.row_counts_hash.sort.each do |table, count| %>
+            <tr>
+              <td class="px-3 py-2 font-mono text-xs"><%= table %></td>
+              <td class="px-3 py-2 text-right"><%= number_with_delimiter(count) %></td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr><td colspan="2" class="px-3 py-4 text-center text-slate-400">아직 행 수 정보가 없습니다.</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,19 @@
+{
+  "name": "workmori",
+  "version": "1.0.0",
+  "description": "> **사장님의 일을 기억하고 스스로 이어가는 AI 직원** > **가칭 상태** — 도메인·상표 미확정.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.61.1"
+  }
+}

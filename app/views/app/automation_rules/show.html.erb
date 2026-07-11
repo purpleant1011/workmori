@@ -1,0 +1,58 @@
+<% content_for :title do %>자동화 규칙<% end %>
+<div class="px-6 py-8 max-w-5xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-semibold text-gray-900">⚙️ <%= @rule.name %></h1>
+      <p class="text-sm text-gray-500 mt-1"><%= @rule.natural_language %></p>
+    </div>
+    <div class="flex gap-2">
+      <%= button_to "즉시 실행", app_run_automation_rule_path(@rule), method: :post, class: "px-3 py-1.5 text-sm bg-indigo-600 text-white rounded" %>
+      <% if @rule.status == "active" %>
+        <%= button_to "일시정지", app_pause_automation_rule_path(@rule), method: :post, class: "px-3 py-1.5 text-sm bg-amber-100 text-amber-800 rounded" %>
+      <% else %>
+        <%= button_to "활성화", app_activate_automation_rule_path(@rule), method: :post, class: "px-3 py-1.5 text-sm bg-emerald-600 text-white rounded" %>
+      <% end %>
+      <%= link_to "수정", app_edit_automation_rule_path(@rule), class: "px-3 py-1.5 text-sm bg-gray-100 rounded" %>
+      <%= link_to "목록", app_automation_rules_path, class: "px-3 py-1.5 text-sm bg-gray-100 rounded" %>
+    </div>
+  </div>
+
+  <div class="bg-white shadow rounded-lg p-6 mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+    <div>
+      <p class="text-gray-500 text-xs">AI 직원</p>
+      <p class="font-semibold"><%= @rule.ai_employee&.name || "-" %></p>
+    </div>
+    <div>
+      <p class="text-gray-500 text-xs">상태</p>
+      <p><span class="px-2 py-0.5 rounded text-xs <%= @rule.status == 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200' %>"><%= @rule.status %></span></p>
+    </div>
+    <div>
+      <p class="text-gray-500 text-xs">주기</p>
+      <p class="font-semibold"><% sched = @rule.automation_schedules.first %><%= sched&.cadence || "—" %></p>
+    </div>
+    <div>
+      <p class="text-gray-500 text-xs">예약</p>
+      <p class="font-mono text-xs"><%= sched&.summary || "예약 없음" %></p>
+    </div>
+  </div>
+
+  <div class="bg-white shadow rounded-lg p-6">
+    <h2 class="text-lg font-semibold mb-4">최근 실행</h2>
+    <% if @executions.any? %>
+      <table class="min-w-full text-sm">
+        <thead><tr class="text-left border-b"><th class="py-2">시각</th><th>상태</th><th>콘텐츠</th></tr></thead>
+        <tbody>
+          <% @executions.each do |ex| %>
+            <tr class="border-t">
+              <td class="py-2 text-xs text-gray-500"><%= ex.created_at&.strftime("%m-%d %H:%M") %></td>
+              <td><span class="px-2 py-0.5 text-xs rounded bg-gray-100"><%= ex.state %></span></td>
+              <td><%= link_to ex.content_item_id ? "콘텐츠 ##{ex.content_item_id}" : "—", ex.content_item_id ? app_content_item_path(ex.content_item_id) : "#" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="text-sm text-gray-400">아직 실행 이력이 없습니다.</p>
+    <% end %>
+  </div>
+</div>

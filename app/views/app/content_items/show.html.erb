@@ -1,0 +1,127 @@
+<% content_for :title, @content.title %>
+<div class="max-w-4xl mx-auto p-6 space-y-4">
+  <div class="flex items-center justify-between">
+    <div>
+      <a class="text-xs text-gray-500" href="<%= app_content_items_path %>">← 목록</a>
+      <h1 class="text-2xl font-bold mt-1"><%= @content.title %></h1>
+      <p class="text-xs text-gray-500 mt-1">state: <span class="font-mono"><%= @content.state %></span> · safety_state: <span class="font-mono"><%= @content.safety_state %></span></p>
+    </div>
+    <div class="flex gap-2">
+      <a class="px-3 py-2 rounded border text-sm" href="<%= app_edit_content_item_path(@content) %>">수정</a>
+      <% if %w[needs_review generated].include?(@content.state) %>
+        <form action="<%= app_approve_content_item_path(@content) %>" method="post" class="inline">
+          <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+          <button class="px-3 py-2 rounded bg-emerald-600 text-white text-sm">승인+발행</button>
+        </form>
+        <form action="<%= app_reject_content_item_path(@content) %>" method="post" class="inline">
+          <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+          <button class="px-3 py-2 rounded bg-rose-600 text-white text-sm">반려</button>
+        </form>
+      <% end %>
+      <% if @content.state == "scheduled" %>
+        <form action="<%= app_publish_content_item_path(@content) %>" method="post" class="inline">
+          <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+          <button class="px-3 py-2 rounded bg-indigo-600 text-white text-sm">지금 발행</button>
+        </form>
+      <% end %>
+      <form action="<%= app_archive_content_item_path(@content) %>" method="post" class="inline">
+        <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+        <button class="px-3 py-2 rounded border text-sm">보관</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="md:col-span-2 bg-white border rounded p-4 space-y-3">
+      <div>
+        <h2 class="text-xs font-semibold text-gray-500 mb-1">본문</h2>
+        <pre class="whitespace-pre-wrap text-sm font-mono"><%= @content.body %></pre>
+      </div>
+      <div>
+        <h2 class="text-xs font-semibold text-gray-500 mb-1">캡션</h2>
+        <p class="text-sm whitespace-pre-wrap"><%= @content.caption %></p>
+      </div>
+      <div>
+        <h2 class="text-xs font-semibold text-gray-500 mb-1">해시태그</h2>
+        <p class="text-sm font-mono"><%= @content.hashtags_json %></p>
+      </div>
+      <div>
+        <h2 class="text-xs font-semibold text-gray-500 mb-1">대상 채널</h2>
+        <p class="text-sm"><%= @content.target_channel_kind %></p>
+      </div>
+    </div>
+
+    <div class="space-y-4">
+      <div class="bg-white border rounded p-4">
+        <h2 class="text-xs font-semibold text-gray-500 mb-2">예약/발행 시간</h2>
+        <p class="text-sm">scheduled_at: <%= @content.scheduled_at %></p>
+        <p class="text-sm">published_at: <%= @content.published_at %></p>
+        <% if @content.published_external_url.present? %>
+          <p class="text-sm mt-1">외부 URL: <a class="text-indigo-600 underline" target="_blank" href="<%= @content.published_external_url %>"><%= @content.published_external_url %></a></p>
+        <% end %>
+        <form action="<%= app_schedule_content_item_path(@content) %>" method="post" class="mt-3 flex gap-2">
+          <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+          <input type="datetime-local" name="scheduled_at" class="border rounded px-2 py-1 text-sm flex-1">
+          <button class="px-3 py-1 text-sm rounded bg-gray-800 text-white">예약</button>
+        </form>
+      </div>
+
+      <% active_channels = @current_account.channel_connections.where(status: "active") %>
+      <% if active_channels.any? && %w[generated approved scheduled].include?(@content.state) %>
+        <div class="bg-white border rounded p-4">
+          <h2 class="text-xs font-semibold text-gray-500 mb-2">채널 직접 게시</h2>
+          <% active_channels.each do |ch| %>
+            <form action="/app/content/items/<%= @content.id %>/publish_to_channel" method="post" class="flex items-center gap-2 mb-2">
+              <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+              <input type="hidden" name="channel_id" value="<%= ch.id %>">
+              <span class="text-sm font-medium flex-1"><%= ch.kind.humanize %></span>
+              <button class="px-3 py-1 text-sm rounded bg-indigo-600 text-white">게시</button>
+            </form>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if @approval %>
+        <div class="bg-amber-50 border border-amber-200 rounded p-4">
+          <h2 class="text-xs font-semibold text-amber-700 mb-2">검수 요청</h2>
+          <p class="text-sm">state: <span class="font-mono"><%= @approval.state %></span></p>
+          <p class="text-xs text-gray-600 mt-1">expires_at: <%= @approval.expires_at %></p>
+          <% if @approval.decision_notes.present? %>
+            <p class="text-xs text-gray-600 mt-1">메모: <%= @approval.decision_notes %></p>
+          <% end %>
+        </div>
+      <% end %>
+
+      <div class="bg-white border rounded p-4">
+        <h2 class="text-xs font-semibold text-gray-500 mb-2">안전 검증 결과</h2>
+        <pre class="text-xs whitespace-pre-wrap break-all"><%= JSON.pretty_generate(@content.safety_notes || {}) %></pre>
+      </div>
+
+      <% if @attempts.any? %>
+        <div class="bg-white border rounded p-4">
+          <h2 class="text-xs font-semibold text-gray-500 mb-2">발행 시도 (<%= @attempts.size %>)</h2>
+          <ul class="space-y-1">
+            <% @attempts.each do |a| %>
+              <li class="text-xs">
+                <span class="font-mono <%= a.state == "succeeded" ? "text-emerald-600" : (a.state == "failed" ? "text-rose-600" : "text-gray-600") %>"><%= a.state %></span>
+                · attempts=<%= a.attempts %>
+                · <%= a.created_at.strftime("%m-%d %H:%M") %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <% if @versions && @versions.size > 1 %>
+        <div class="bg-white border rounded p-4">
+          <h2 class="text-xs font-semibold text-gray-500 mb-2">버전 (<%= @versions.size %>)</h2>
+          <ul class="space-y-1">
+            <% @versions.each do |v| %>
+              <li class="text-xs">v<%= v.version_number %> · <%= v.created_at.strftime("%m-%d %H:%M") %><%= " · 변경자=#{User.find_by(id: v.changed_by_user_id)&.name}" if v.changed_by_user_id %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

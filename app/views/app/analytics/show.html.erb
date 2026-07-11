@@ -1,0 +1,124 @@
+<% content_for :title, "분석 / CSAT" %>
+<div class="max-w-6xl mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">분석 / CSAT</h1>
+    <div class="flex items-center gap-2 text-sm">
+      <%= link_to "7일",   app_analytics_path(days: 7),   class: "px-3 py-1 rounded border #{'bg-emerald-600 text-white' if @days == 7}" %>
+      <%= link_to "30일",  app_analytics_path(days: 30),  class: "px-3 py-1 rounded border #{'bg-emerald-600 text-white' if @days == 30}" %>
+      <%= link_to "90일",  app_analytics_path(days: 90),  class: "px-3 py-1 rounded border #{'bg-emerald-600 text-white' if @days == 90}" %>
+      <%= link_to "CSV 다운로드", app_export_analytics_path(days: @days, format: :csv), class: "px-3 py-1 rounded border bg-slate-100" %>
+    </div>
+  </div>
+
+  <%# ───── CSAT 카드 ───── %>
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-1">평균 점수</h3>
+      <p class="text-3xl font-bold text-emerald-600"><%= @csat.average_score %></p>
+      <p class="text-xs text-slate-500 mt-1">/ 5.0 · <%= @csat.total_responses %>건 응답</p>
+    </div>
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-1">추천 지수 (NPS 유사)</h3>
+      <p class="text-3xl font-bold text-indigo-600"><%= @csat.nps_score %></p>
+      <p class="text-xs text-slate-500 mt-1">추천 <%= @csat.promoter_pct %>% · 비추천 <%= @csat.detractor_pct %>%</p>
+    </div>
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-1">분포</h3>
+      <p class="text-sm">
+        <span class="text-emerald-600 font-bold"><%= @csat.promoters %></span> 추천 ·
+        <span class="text-amber-600 font-bold"><%= @csat.neutrals %></span> 중립 ·
+        <span class="text-rose-600 font-bold"><%= @csat.detractors %></span> 비추천
+      </p>
+    </div>
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-1">총 응답</h3>
+      <p class="text-3xl font-bold"><%= @csat.total_responses %></p>
+      <p class="text-xs text-slate-500 mt-1">최근 <%= @days %>일</p>
+    </div>
+  </div>
+
+  <%# ───── 시계열 (텍스트 차트) ───── %>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-2">콘텐츠 발행 (일별)</h3>
+      <div class="space-y-1 text-xs">
+        <% @data.series_published.last(14).each do |r| %>
+          <div class="flex items-center gap-2">
+            <span class="w-20 text-slate-500"><%= r[:date][5..] %></span>
+            <div class="flex-1 bg-slate-100 h-3 rounded">
+              <% max_p = @data.series_published.map { |x| x[:count] }.max.to_i %>
+              <% pct = max_p.zero? ? 0 : (r[:count].to_f / max_p * 100).round %>
+              <div class="bg-emerald-500 h-3 rounded" style="width: <%= pct %>%"></div>
+            </div>
+            <span class="w-10 text-right font-mono"><%= r[:count] %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-2">응답률 (일별)</h3>
+      <div class="space-y-1 text-xs">
+        <% @data.series_response_rate.last(14).each do |r| %>
+          <div class="flex items-center gap-2">
+            <span class="w-20 text-slate-500"><%= r[:date][5..] %></span>
+            <div class="flex-1 bg-slate-100 h-3 rounded">
+              <% pct = r[:rate].to_f %>
+              <div class="bg-indigo-500 h-3 rounded" style="width: <%= pct %>%"></div>
+            </div>
+            <span class="w-14 text-right font-mono"><%= r[:rate].to_f %>%</span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-2">자동화 실행 (성공/실패)</h3>
+      <div class="space-y-1 text-xs">
+        <% @data.series_automation_runs.last(14).each do |r| %>
+          <div class="flex items-center gap-2">
+            <span class="w-20 text-slate-500"><%= r[:date][5..] %></span>
+            <span class="font-mono w-10 text-right"><%= r[:total] %></span>
+            <span class="text-emerald-600">✓ <%= r[:succeeded] %></span>
+            <span class="text-rose-600 ml-1">✗ <%= r[:failed] %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="bg-white border rounded p-4">
+      <h3 class="font-semibold mb-2">CSAT 추세</h3>
+      <div class="space-y-1 text-xs">
+        <% @data.series_csat.last(14).each do |r| %>
+          <div class="flex items-center gap-2">
+            <span class="w-20 text-slate-500"><%= r[:date][5..] %></span>
+            <span class="font-mono w-12 text-right"><%= r[:avg_score] %></span>
+            <span class="text-slate-500">(<%= r[:responses] %>건)</span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%# ───── 최근 코멘트 ───── %>
+  <div class="bg-white border rounded p-4">
+    <h3 class="font-semibold mb-2">최근 CSAT 코멘트</h3>
+    <% if @csat.recent_comments.empty? %>
+      <p class="text-sm text-slate-500">아직 코멘트가 없습니다.</p>
+    <% else %>
+      <ul class="space-y-2 text-sm">
+        <% @csat.recent_comments.each do |score, comment, created_at| %>
+          <li class="border-b pb-2">
+            <span class="font-bold mr-2">★<%= score %></span>
+            <%= comment %>
+            <span class="text-xs text-slate-500 ml-2"><%= created_at&.strftime("%Y-%m-%d %H:%M") %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+
+  <div class="mt-6 text-xs text-slate-500">
+    <%= link_to "← 대시보드로", app_root_path %>
+  </div>
+</div>

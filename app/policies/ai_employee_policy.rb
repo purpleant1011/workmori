@@ -1,0 +1,1 @@
+class AiEmployeePolicy < ApplicationPolicy; end

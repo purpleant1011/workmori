@@ -1,0 +1,28 @@
+<% content_for :title, "고객 사례" %>
+<section class="py-12">
+  <h1 class="text-4xl font-bold text-slate-900">고객 사례</h1>
+  <p class="mt-4 text-lg text-slate-700 max-w-3xl">
+    실제 사업장에서 워크모리가 어떻게 동작하는지, 비식별화된 가상 사례로 확인하세요.
+  </p>
+</section>
+
+<section class="py-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+  <% @case_studies.each do |cs| %>
+    <div class="p-6 rounded-lg bg-white shadow-sm border border-slate-200">
+      <div class="text-xs text-slate-500"><%= cs[:industry] %> · <%= cs[:client_role] %></div>
+      <h2 class="mt-1 text-xl font-semibold text-slate-900"><%= cs[:slug] %></h2>
+      <p class="mt-2 text-sm text-slate-700"><%= cs[:summary] %></p>
+      <div class="mt-4 grid grid-cols-3 gap-2">
+        <% cs[:metrics].each do |m| %>
+          <div class="text-center p-2 rounded bg-slate-50">
+            <div class="text-lg font-bold text-slate-900"><%= m[:value] %></div>
+            <div class="text-xs text-slate-500"><%= m[:label] %></div>
+          </div>
+        <% end %>
+      </div>
+      <div class="mt-4">
+        <%= link_to "상세 보기 →", public_case_study_path(cs[:slug]), class: "text-emerald-700 font-semibold" %>
+      </div>
+    </div>
+  <% end %>
+</section>

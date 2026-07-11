@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# ngrok 영구 터널 자동 시작 스크립트 (Mac mini 24/7 운영용)
+# 사용법:
+#   bin/ngrok-up           # 백그라운드로 ngrok 시작, URL 출력, launchd 등록
+#   bin/ngrok-stop         # ngrok 중지
+#   bin/ngrok-url          # 현재 URL 확인
+#
+# 주의: ngrok free 등급은 도메인이 매번 변경됩니다.
+#       영구 도메인은 유료 플랜에서만 가능합니다.
+
+set -e
+NGROK_PORT=${NGROK_PORT:-3001}
+LOG=/Users/hochari/.hermes/scratch/ngrok-workmori.log
+PLIST=~/Library/LaunchAgents/com.workmori.ngrok.plist
+
+case "${1:-up}" in
+  up)
+    # 이미 떠있는지 확인
+    if pgrep -f "ngrok http $NGROK_PORT" > /dev/null; then
+      echo "ngrok 이미 실행 중:"
+      bin/ngrok-url
+      exit 0
+    fi
+
+    # puma 살아있는지 확인
+    if ! curl -s -o /dev/null http://127.0.0.1:$NGROK_PORT/; then
+      echo "⚠  puma가 http://127.0.0.1:$NGROK_PORT 에서 응답하지 않습니다. 먼저 'bin/rails server' 를 시작하세요."
+      exit 1
+    fi
+
+    mkdir -p /Users/hochari/.hermes/scratch
+    nohup ngrok http $NGROK_PORT --log "$LOG" > /dev/null 2>&1 &
+    sleep 4
+
+    URL=$(curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null | ruby -rjson -e 'puts JSON.parse(STDIN.read)["tunnels"]&.first&.dig("public_url") || "(unknown)"')
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  ngrok 터널 시작됨"
+    echo "  URL: $URL"
+    echo "  로그: $LOG"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "  • 매번 ngrok 재시작 시 URL이 변경됩니다 (free 등급)."
+    echo "  • 영구 도메인은 ngrok 유료 플랜에서 --domain 옵션으로 가능합니다."
+    echo ""
+
+    # launchd 등록 (재부팅 후 자동 시작)
+    if [ ! -f "$PLIST" ]; then
+      cat > "$PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.workmori.ngrok</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/ngrok</string>
+    <string>http</string>
+    <string>$NGROK_PORT</string>
+    <string>--log</string>
+    <string>$LOG</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <false/>
+  <key>StandardOutPath</key>
+  <string>$LOG.out</string>
+  <key>StandardErrorPath</key>
+  <string>$LOG.err</string>
+</dict>
+</plist>
+EOF
+      launchctl load "$PLIST" 2>/dev/null || true
+      echo "✓ launchd 등록: $PLIST"
+    fi
+    ;;
+
+  stop)
+    pkill -f "ngrok http $NGROK_PORT" 2>/dev/null || true
+    launchctl unload "$PLIST" 2>/dev/null || true
+    echo "ngrok 중지됨"
+    ;;
+
+  url)
+    curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null | \
+      ruby -rjson -e 'puts JSON.parse(STDIN.read)["tunnels"]&.first&.dig("public_url") || "ngrok not running"'
+    ;;
+esac

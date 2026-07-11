@@ -1,0 +1,42 @@
+<% content_for :title, "채널 관리" %>
+<div class="max-w-5xl mx-auto p-6 space-y-5">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold">채널 관리</h1>
+    <%= link_to "채널 추가", app_new_channel_path, class: "px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700" %>
+  </div>
+
+  <% if @channels.empty? %>
+    <div class="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">
+      연결된 채널이 없습니다. 채널을 추가해 보세요.
+    </div>
+  <% else %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <% @channels.each do |c| %>
+        <div class="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-semibold"><%= c.kind.humanize %></h3>
+              <p class="text-sm text-slate-500"><%= c.handle || "—" %></p>
+            </div>
+            <span class="text-xs px-3 py-1 rounded-full <%= c.status == 'active' ? 'bg-emerald-100 text-emerald-700' : c.status == 'paused' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500' %>">
+              <%= c.status %>
+            </span>
+          </div>
+          <p class="text-xs text-slate-500">스코프: <%= Array(JSON.parse(c.scopes_json.to_s.empty? ? "[]" : c.scopes_json)).join(", ").presence || "없음" %></p>
+          <div class="flex flex-wrap gap-2 text-sm">
+            <% if c.status == "ready" || c.status == "planned" %>
+              <%= button_to "활성화", app_channel_activate_path(c), method: :post, class: "px-3 py-1 bg-emerald-600 text-white rounded" %>
+            <% end %>
+            <% if c.status == "active" %>
+              <%= button_to "일시정지", app_channel_pause_path(c), method: :post, class: "px-3 py-1 bg-amber-500 text-white rounded" %>
+            <% end %>
+            <% if c.status == "paused" %>
+              <%= button_to "재개", app_channel_resume_path(c), method: :post, class: "px-3 py-1 bg-sky-600 text-white rounded" %>
+            <% end %>
+            <%= button_to "해제", "/app/channels/#{c.id}", method: :delete, method: :delete, form: { data: { turbo_confirm: "정말 해제하시겠습니까?" } }, class: "px-3 py-1 bg-rose-600 text-white rounded" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

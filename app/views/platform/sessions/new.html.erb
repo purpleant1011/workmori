@@ -1,0 +1,7 @@
+<h1 class="text-2xl font-bold mb-4">운영자 로그인</h1>
+<%= form_with url: "/platform/login", method: :post, local: true, class: "space-y-3 max-w-sm" do |f| %>
+  <% if flash[:alert] %><div class="rounded bg-rose-700/30 border border-rose-500 px-3 py-2 text-rose-200"><%= flash[:alert] %></div><% end %>
+  <div><label class="block text-sm">이메일</label><input name="email" type="email" class="w-full rounded bg-slate-800 border border-slate-700 p-2" required></div>
+  <div><label class="block text-sm">비밀번호</label><input name="password" type="password" class="w-full rounded bg-slate-800 border border-slate-700 p-2" required></div>
+  <button class="rounded bg-emerald-500 px-4 py-2 text-slate-900 font-semibold">로그인</button>
+<% end %>

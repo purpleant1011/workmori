@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.workmori.web</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/hochari/.local/share/mise/installs/ruby/3.4.10/bin/bundle</string>
+        <string>exec</string>
+        <string>/Users/hochari/develop/workmori/bin/rails</string>
+        <string>server</string>
+        <string>-p</string>
+        <string>3001</string>
+        <string>-b</string>
+        <string>0.0.0.0</string>
+        <string>-e</string>
+        <string>production</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/hochari/develop/workmori</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/hochari/.local/share/mise/installs/ruby/3.4.10/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>RAILS_ENV</key>
+        <string>production</string>
+        <key>PGHOST</key>
+        <string>127.0.0.1</string>
+        <key>PGPORT</key>
+        <string>5432</string>
+        <key>PGUSER</key>
+        <string>hochari</string>
+        <key>PGPASSWORD</key>
+        <string></string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+        <key>Crashed</key>
+        <true/>
+    </dict>
+
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+
+    <key>StandardOutPath</key>
+    <string>/Users/hochari/Library/Logs/workmori/web.out.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/hochari/Library/Logs/workmori/web.err.log</string>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <key>Nice</key>
+    <integer>5</integer>
+
+    <key>Umask</key>
+    <integer>022</integer>
+
+    <key>UserName</key>
+    <string>hochari</string>
+</dict>
+</plist>

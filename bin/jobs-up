@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+# Solid Queue supervisor 자동 시작 (Mac mini 24/7)
+# 사용법:
+#   bin/jobs-up          # supervisor 백그라운드 시작 + launchd 등록
+#   bin/jobs-stop        # supervisor 종료
+#   bin/jobs-status      # 상태 확인
+
+set -e
+PLIST=~/Library/LaunchAgents/com.workmori.solidqueue.plist
+LOG=/Users/hochari/.hermes/scratch/workmori-solidqueue.log
+
+case "${1:-up}" in
+  up)
+    if pgrep -f "bin/jobs start" > /dev/null; then
+      echo "Solid Queue supervisor 이미 실행 중"
+      bin/jobs-status
+      exit 0
+    fi
+
+    mkdir -p /Users/hochari/.hermes/scratch
+    cd /Users/hochari/develop/workmori
+    export PATH="$HOME/.local/share/mise/installs/ruby/3.4.10/bin:$PATH"
+
+    # launchd 등록 (재부팅 후 자동 시작)
+    if [ ! -f "$PLIST" ]; then
+      cat > "$PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.workmori.solidqueue</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/hochari/.local/share/mise/installs/ruby/3.4.10/bin/ruby</string>
+    <string>/Users/hochari/develop/workmori/bin/jobs</string>
+    <string>start</string>
+    <string>--mode</string>
+    <string>async</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>$HOME/.local/share/mise/installs/ruby/3.4.10/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
+    <key>RAILS_ENV</key>
+    <string>production</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <false/>
+  <key>StandardOutPath</key>
+  <string>$LOG.out</string>
+  <key>StandardErrorPath</key>
+  <string>$LOG.err</string>
+</dict>
+</plist>
+EOF
+      launchctl load "$PLIST" 2>/dev/null || true
+      echo "✓ launchd 등록: $PLIST (RAILS_ENV=production)"
+    fi
+
+    # 현재 세션에서 즉시 시작 (dev)
+    nohup bash -c "cd /Users/hochari/develop/workmori && export PATH=\"$HOME/.local/share/mise/installs/ruby/3.4.10/bin:$PATH\" && bin/jobs start --mode async" > "$LOG" 2>&1 &
+    sleep 5
+    echo ""
+    if pgrep -f "bin/jobs start" > /dev/null; then
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      echo "  ✓ Solid Queue supervisor 시작됨"
+      echo "  PID: $(pgrep -f 'bin/jobs start' | head -1)"
+      echo "  로그: $LOG"
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    else
+      echo "✗ Solid Queue 시작 실패. 로그 확인: $LOG"
+      tail -30 "$LOG"
+    fi
+    ;;
+
+  stop)
+    pkill -f "bin/jobs start" 2>/dev/null || true
+    launchctl unload "$PLIST" 2>/dev/null || true
+    echo "Solid Queue 중지됨"
+    ;;
+
+  status)
+    cd /Users/hochari/develop/workmori
+    export PATH="$HOME/.local/share/mise/installs/ruby/3.4.10/bin:$PATH"
+    PID=$(pgrep -f "bin/jobs start" | head -1)
+    if [ -z "$PID" ]; then
+      echo "✗ Solid Queue 실행 안 됨"
+      exit 1
+    fi
+    echo "✓ Solid Queue 실행 중 (PID=$PID)"
+    bin/rails runner '
+      tasks = SolidQueue::RecurringTask.all
+      puts "Recurring tasks: #{tasks.size}"
+      tasks.each do |t|
+        next_run = SolidQueue::RecurringExecution.where(recurring_task_id: t.id).order(run_at: :asc).first&.run_at
+        puts "  • #{t.class_name || t.command} @ #{t.schedule} (next: #{next_run || "soon"})"
+      end
+    ' 2>&1 | grep -v "^$" | tail -20
+    ;;
+esac

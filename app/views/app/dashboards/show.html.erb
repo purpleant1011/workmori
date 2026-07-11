@@ -1,0 +1,83 @@
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-2xl font-bold">사업자 대시보드</h1>
+  <div class="text-sm space-x-2">
+    <%= link_to "최근 7일",  app_root_path(range: "7d"),  class: ("font-bold underline" if @range == "7d") %>
+    <%= link_to "최근 30일", app_root_path(range: "30d"), class: ("font-bold underline" if @range == "30d") %>
+    <%= link_to "최근 90일", app_root_path(range: "90d"), class: ("font-bold underline" if @range == "90d") %>
+  </div>
+</div>
+
+<p class="text-slate-500 mb-6"><%= @current_account.name %> · <%= @since.strftime("%Y-%m-%d") %> ~ 오늘</p>
+
+<%# ── KPI 카드 그리드 ── %>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+  <%= render "kpi", label: "콘텐츠 생성",    value: @metrics.content_total,         sub: "발행 #{@metrics.content_published}건" %>
+  <%= render "kpi", label: "발행 성공률",    value: "#{@metrics.publish_success_rate}%", sub: "#{@metrics.publish_succeeded}/#{@metrics.publish_attempts}건" %>
+  <%= render "kpi", label: "응답률",         value: "#{@metrics.response_rate}%",    sub: "#{@metrics.conversations_responded}/#{@metrics.conversations_total}건" %>
+  <%= render "kpi", label: "자동화 성공률",  value: "#{@metrics.automation_success_rate}%", sub: "#{@metrics.automations_succeeded}/#{@metrics.automations_run}건" %>
+</div>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+  <%= render "kpi", label: "활성 채널",        value: @metrics.active_channels,        sub: @metrics.channels_by_kind.map { |k, v| "#{k}:#{v}" }.join(" · ").presence || "없음" %>
+  <%= render "kpi", label: "검수 대기",        value: @metrics.content_pending,        sub: "예약 #{@metrics.content_scheduled}건" %>
+  <%= render "kpi", label: "사람 인계 대기",   value: @metrics.handoffs_open,          sub: "누적 #{@metrics.handoffs_total}건" %>
+  <%= render "kpi", label: "문의 (글로벌)",    value: @metrics.inquiries_total,        sub: "최근 #{@days}일" %>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+  <div class="bg-white border rounded p-4">
+    <h3 class="font-semibold mb-2">매출 (결제 완료)</h3>
+    <p class="text-3xl font-bold text-emerald-600"><%= number_with_delimiter(@metrics.revenue_paid_krw, delimiter: ",") %> 원</p>
+    <p class="text-sm text-slate-500 mt-1"><%= @metrics.invoice_count_paid %>건 결제 / 미결제 <%= number_with_delimiter(@metrics.revenue_outstanding_krw, delimiter: ",") %> 원 (<%= @metrics.invoice_count_open %>건)</p>
+    <p class="mt-2 text-xs"><%= link_to "청구/결제 보기 →", app_billing_path, class: "underline text-emerald-700" %></p>
+  </div>
+  <div class="bg-white border rounded p-4">
+    <h3 class="font-semibold mb-2">CSAT (고객 만족도)</h3>
+    <% if @metrics.csat_score %>
+      <p class="text-3xl font-bold text-emerald-600"><%= @metrics.csat_score %> / 5.0</p>
+      <p class="text-sm text-slate-500 mt-1"><%= @metrics.csat_responses %>명 응답</p>
+    <% else %>
+      <p class="text-slate-400 text-lg">응답 없음</p>
+      <p class="text-xs text-slate-500 mt-1">고객 만족도 조사가 아직 수집되지 않았습니다.</p>
+    <% end %>
+  </div>
+</div>
+
+<h2 class="mt-6 mb-2 font-semibold">최근 자동화 실행</h2>
+<table class="w-full text-sm border mb-6">
+  <thead><tr class="bg-slate-100"><th class="text-left px-2 py-1">ID</th><th>규칙</th><th>상태</th><th>시각</th></tr></thead>
+  <tbody>
+    <% if @recent_automations.any? %>
+      <% @recent_automations.each do |ex| %>
+        <tr class="border-t"><td class="px-2 py-1"><%= ex.id %></td><td><%= ex.automation_rule&.name %></td><td><%= ex.state %></td><td><%= ex.created_at.strftime("%Y-%m-%d %H:%M") %></td></tr>
+      <% end %>
+    <% else %>
+      <tr><td colspan="4" class="text-center text-slate-400 py-3">자동화 실행 기록이 없습니다.</td></tr>
+    <% end %>
+  </tbody>
+</table>
+
+<h2 class="mt-6 mb-2 font-semibold">검수 대기 콘텐츠</h2>
+<ul class="space-y-1">
+  <% if @pending_contents.any? %>
+    <% @pending_contents.each do |c| %>
+      <li class="bg-white border rounded px-3 py-2">
+        <a class="underline text-emerald-700" href="<%= app_content_item_path(c) %>"><%= c.title %></a>
+        · <span class="text-slate-500"><%= c.kind %></span>
+        · <span class="text-xs text-slate-400"><%= c.created_at.strftime("%m-%d %H:%M") %></span>
+      </li>
+    <% end %>
+  <% else %>
+    <li class="text-slate-400 text-sm">검수 대기 콘텐츠가 없습니다. 🎉</li>
+  <% end %>
+</ul>
+
+<div class="mt-8 text-sm text-slate-500">
+  <%= link_to "콘텐츠 목록 →", app_content_items_path, class: "underline" %>
+  ·
+  <%= link_to "채널 관리 →", app_channels_path, class: "underline" %>
+  ·
+  <%= link_to "자동화 규칙 →", app_automation_rules_path, class: "underline" %>
+  ·
+  <%= link_to "리포트 →", app_reports_path, class: "underline" %>
+</div>
