@@ -82,7 +82,9 @@
       <a href="<%= app_delivery_logs_path %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= 'bg-emerald-50 text-emerald-700 font-medium border-l-4 border-emerald-500' if controller_name == 'delivery_logs' %>">📋 발송 기록</a>
 
       <div class="px-4 py-2 bg-slate-50 border-b border-y border-slate-200 text-xs font-medium text-slate-500 uppercase tracking-wider mt-2">⑥ 확인할 일</div>
-      <a href="/app/confirmations" class="block px-4 py-2.5 hover:bg-slate-50 <%= 'bg-emerald-50 text-emerald-700 font-medium border-l-4 border-emerald-500' if controller_name == 'confirmations' %>">📝 확인·승인 모아보기</a>
+      <%# P0-6에서 /app/confirmations 라우트 추가 후 활성화 %>
+      <%# <a href="/app/confirmations" class="block px-4 py-2.5 hover:bg-slate-50">📝 확인·승인 모아보기</a> %>
+      <span class="block px-4 py-2.5 text-slate-400 text-xs">곧 추가됩니다</span>
 
       <div class="px-4 py-2 bg-slate-50 border-b border-y border-slate-200 text-xs font-medium text-slate-500 uppercase tracking-wider mt-2">⑦ 계정·지원</div>
       <a href="<%= app_settings_path %>" class="block px-4 py-2.5 hover:bg-slate-50">⚙️ 설정</a>

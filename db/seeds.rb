@@ -309,7 +309,7 @@ admin_staff = PlatformStaff.find_by(email_address: "platform-admin@workmori.exam
 # 1) 환영 공지
 ann_welcome = Announcement.find_or_initialize_by(kind: "info", title: "소희 프로젝트 정식 운영을 시작합니다")
 ann_welcome.assign_attributes(
-  body: "안녕하세요, 사장님.\n\n소희 프로젝트가 정식 운영을 시작합니다. 소희는 사장님의 일을 기억하고 스스로 이어가는 AI 직원입니다.\n\n• AI 직원 소희의 페르소나를 자유롭게 설정 (톤, 어휘, 금지어, 인계 규칙)\n• 사업장 자료 업로드 → RAG 지식 자동 구성\n• AI 직원 자동 응대 (Instagram, Threads, Mastodon, Kakao, Naver)\n• 주간 자동 일정 + 검수 + 발행\n• 실시간 결과 리포트\n\n궁금한 점은 운영팀(support@soheeproject.example)으로 연락 주세요.",
+  body: "안녕하세요, 사장님.\n\n소희 프로젝트가 정식 운영을 시작합니다. 소희는 사장님의 일을 기억하고 스스로 이어가는 AI 직원입니다.\n\n• AI 직원 소희의 페르소나를 자유롭게 설정 (톤, 어휘, 금지어, 인계 규칙)\n• 사업장 자료 업로드 → 소희가 즉시 학습\n• AI 직원 자동 응대 (Instagram, Threads, Mastodon, Kakao, Naver)\n• 주간 자동 일정 + 검수 + 발행\n• 실시간 결과 리포트\n\n궁금한 점은 운영팀(support@soheeproject.example)으로 연락 주세요.",
   audience: "all",
   status: "published",
   published_at: Time.current,
