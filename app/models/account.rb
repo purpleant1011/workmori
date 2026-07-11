@@ -52,6 +52,19 @@ class Account < ApplicationRecord
   def terminated?; status == "terminated"; end
   def active?; status == "active"; end
 
+  # 14일 무료 체험 (셀프 가입 시 자동 부여)
+  TRIAL_DURATION = 14.days
+  def on_trial?
+    trial_ends_at.present? && Time.current < trial_ends_at
+  end
+  def trial_expired?
+    trial_ends_at.present? && Time.current >= trial_ends_at
+  end
+  def trial_days_left
+    return nil unless trial_ends_at
+    ((trial_ends_at - Time.current) / 1.day).ceil
+  end
+
   def owner_user
     memberships.where(role: "owner").first&.user
   end

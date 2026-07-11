@@ -667,8 +667,8 @@
       <button id="login-submit" type="submit" style="background: var(--brand-deep); color: #fff; padding: 0.85rem 1rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 0.4rem;">소희 작업실로 이동</button>
     </form>
 
-    <p style="font-size: 0.78rem; color: #a8a29e; margin: 1.2rem 0 0; line-height: 1.6;">
-      신규 사업장 도입은 <a href="#contact" onclick="closeLoginModal()" style="color: var(--brand);">도입 상담 신청</a>을 먼저 진행해 주세요.
+    <p style="font-size: 0.78rem; color: #a8a29e; margin: 1.2rem 0 0; line-height: 1.6; text-align: center;">
+      신규 사업장이라면 <a href="#" onclick="event.preventDefault(); closeLoginModal(); window.open(SOHEE_APP_HOST + '/signup', '_blank', 'noopener');" style="color: var(--brand); font-weight: 600;">회원가입 후 14일 무료 체험</a>을 먼저 이용해 보세요.
     </p>
   </div>
 </div>

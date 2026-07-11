@@ -1,6 +1,7 @@
 class DevOverridesController < ActionController::Base
   skip_forgery_protection
   before_action :no_auth_checks
+  before_action :reject_in_production!
 
   def platform_login
     email = params.require(:email)
@@ -22,7 +23,23 @@ class DevOverridesController < ActionController::Base
     render plain: "OK business user token=#{token}", status: :ok
   end
 
+  # Playwright/CI 환경에서 signup rate_limit (3/IP/시간) 캐시를 강제 리셋한다.
+  def clear_rate_limit
+    deleted = 0
+    if Rails.cache.respond_to?(:delete_matched)
+      pattern = "rack::attack:*"
+      deleted = Rails.cache.delete_matched(pattern) || 0
+    end
+    Rails.cache.delete("rate_limit:signup:create:#{request.remote_ip}") rescue nil
+    render plain: "OK rate_limit cleared deleted=#{deleted}", status: :ok
+  end
+
   private
+
+  def reject_in_production!
+    return unless Rails.env.production?
+    head :forbidden
+  end
 
   def no_auth_checks
     # noop — dev controller skips auth
