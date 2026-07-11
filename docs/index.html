@@ -675,13 +675,11 @@
 
 <script>
   // 앱 호스트 (사업자 로그인 Rails 서버)
-  // - 2026-07-12: prod placeholder(app.soheeproject.example) 제거.
-  //   .example 도메인은 RFC 2606 예약 도메인이라 실제 접속 불가.
-  //   GitHub Pages 데모 단계에서는 항상 dev 호스트로 라우팅.
-  //   prod 도메인 확정 후 이 분기를 dev/prod 환경변수로 교체.
-  var SOHEE_APP_HOST = (function () {
-    return 'http://127.0.0.1:3001';
-  })();
+  // - 2026-07-12: 외부 접속 지원 — cloudflared quick tunnel로 노출된 도메인.
+  //   사용자가 GitHub Pages 데모에서 접속하면 이 도메인을 통해 외부에서도 로그인 가능.
+  //   터널 재시작 시 도메인이 바뀌므로 그때마다 이 값 갱신.
+  //   (참고: 127.0.0.1:3001은 본機에서만 동작, prod 도메인 미보유 상태)
+  var SOHEE_APP_HOST = 'https://peripheral-oasis-certificates-antiques.trycloudflare.com';
 
   function openLoginModal(e) {
     if (e) e.preventDefault();
