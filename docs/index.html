@@ -157,7 +157,7 @@
     <a href="#case">초기 파트너 사례</a>
     <a href="#pricing">가격 안내</a>
     <a href="#faq">FAQ</a>
-    <a href="#login" class="nav-login">로그인</a>
+    <a href="https://peripheral-oasis-certificates-antiques.trycloudflare.com/app/login" target="_blank" rel="noopener noreferrer" class="nav-login">로그인</a>
   </nav>
 </header>
 
@@ -632,7 +632,7 @@
     </div>
     <div>
       <h4>회원</h4>
-      <a href="#login" onclick="openLoginModal(event)">로그인</a>
+      <a class="nav-login" href="https://peripheral-oasis-certificates-antiques.trycloudflare.com/app/login" target="_blank" rel="noopener noreferrer">로그인</a>
     </div>
     <div>
       <h4>법적 고지</h4>
@@ -647,99 +647,40 @@
   </div>
 </footer>
 
-<!-- ============ 로그인 모달 ============ -->
-<div id="login-modal" hidden style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); z-index: 100; display: none; align-items: center; justify-content: center; padding: 1rem;">
-  <div role="dialog" aria-modal="true" aria-labelledby="login-title" style="background: #fff; border-radius: 16px; max-width: 420px; width: 100%; padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,0.25); position: relative;">
-    <button type="button" onclick="closeLoginModal()" aria-label="닫기" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; color: #78716c; cursor: pointer;">&times;</button>
-    <h3 id="login-title" style="font-size: 1.25rem; margin: 0 0 0.4rem; color: var(--brand-deep);">소희 작업실 로그인</h3>
-    <p style="font-size: 0.85rem; color: #78716c; margin: 0 0 1.5rem;">등록된 사업장 운영진만 접근할 수 있습니다.</p>
-
-    <form id="login-form" onsubmit="submitLogin(event)" style="display: flex; flex-direction: column; gap: 0.9rem;">
-      <label style="display: flex; flex-direction: column; gap: 0.35rem;">
-        <span style="font-size: 0.85rem; font-weight: 600; color: #44403c;">이메일 또는 매장 슬러그</span>
-        <input id="login-account" name="account_or_email" type="text" required autocomplete="username" placeholder="owner@shop.com 또는 demo-skincare" style="padding: 0.7rem 0.9rem; border: 1px solid #d6d3d1; border-radius: 8px; font-size: 0.95rem;">
-      </label>
-      <label style="display: flex; flex-direction: column; gap: 0.35rem;">
-        <span style="font-size: 0.85rem; font-weight: 600; color: #44403c;">비밀번호</span>
-        <input id="login-password" name="password" type="password" required autocomplete="current-password" placeholder="••••••••" style="padding: 0.7rem 0.9rem; border: 1px solid #d6d3d1; border-radius: 8px; font-size: 0.95rem;">
-      </label>
-      <div id="login-error" hidden style="background: #fef2f2; color: #b91c1c; padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.85rem;"></div>
-      <button id="login-submit" type="submit" style="background: var(--brand-deep); color: #fff; padding: 0.85rem 1rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 0.4rem;">소희 작업실로 이동</button>
-    </form>
-
-    <p style="font-size: 0.78rem; color: #a8a29e; margin: 1.2rem 0 0; line-height: 1.6; text-align: center;">
-      신규 사업장이라면 <a href="#" onclick="event.preventDefault(); closeLoginModal(); window.open(SOHEE_APP_HOST + '/signup', '_blank', 'noopener');" style="color: var(--brand); font-weight: 600;">회원가입 후 14일 무료 체험</a>을 먼저 이용해 보세요.
-    </p>
+<!-- ============ 로그인 안내 (GitHub Pages 데모) ============ -->
+<!--
+  2026-07-12 변경: cross-origin POST는 HTML form 표준상 origin이 null로 가서
+  Rails 8 forgery_protection_origin_check에 의해 거부됨. 모달 대신 단순 링크로 변경.
+  사용자는 trycloudflare 도메인에서 직접 로그인 → origin 정상.
+-->
+<div style="margin: 1rem auto 0; max-width: 420px; padding: 1.25rem 1.5rem; background: #fff; border: 1px solid var(--brand-soft, #f5e1d6); border-radius: 12px; text-align: center;">
+  <p style="margin: 0 0 0.6rem; font-size: 0.92rem; color: var(--brand-deep); font-weight: 600;">소희 작업실에 오신 것을 환영합니다</p>
+  <p style="margin: 0 0 1rem; font-size: 0.82rem; color: #78716c; line-height: 1.5;">등록된 사업장 운영진만 접근할 수 있습니다.<br>데모 시연용 외부 접속 도메인을 통해 로그인해 주세요.</p>
+  <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+    <a href="https://peripheral-oasis-certificates-antiques.trycloudflare.com/app/login" target="_blank" rel="noopener noreferrer"
+       style="display: inline-block; padding: 0.75rem 1rem; background: var(--brand-deep); color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem;">
+      소희 작업실 로그인 →
+    </a>
+    <a href="https://peripheral-oasis-certificates-antiques.trycloudflare.com/signup" target="_blank" rel="noopener noreferrer"
+       style="display: inline-block; padding: 0.7rem 1rem; background: #fff; color: var(--brand-deep); border: 1px solid var(--brand-deep); border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem;">
+      셀프 회원가입 후 14일 무료 체험
+    </a>
   </div>
+  <p style="margin: 0.9rem 0 0; font-size: 0.75rem; color: #a8a29e; line-height: 1.5;">
+    외부 접속 도메인은 cloudflared quick tunnel — 재시작 시 변경될 수 있음
+  </p>
 </div>
-
 <script>
-  // 앱 호스트 (사업자 로그인 Rails 서버)
-  // - 2026-07-12: 외부 접속 지원 — cloudflared quick tunnel로 노출된 도메인.
-  //   사용자가 GitHub Pages 데모에서 접속하면 이 도메인을 통해 외부에서도 로그인 가능.
-  //   터널 재시작 시 도메인이 바뀌므로 그때마다 이 값 갱신.
-  //   (참고: 127.0.0.1:3001은 본機에서만 동작, prod 도메인 미보유 상태)
+  // SOHEE_APP_HOST는 호환을 위해 유지 (기존 다른 곳에서 참조 가능)
   var SOHEE_APP_HOST = 'https://peripheral-oasis-certificates-antiques.trycloudflare.com';
 
-  function openLoginModal(e) {
-    if (e) e.preventDefault();
-    var m = document.getElementById('login-modal');
-    m.hidden = false;
-    m.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    setTimeout(function () { document.getElementById('login-account').focus(); }, 50);
-  }
-
-  function closeLoginModal() {
-    var m = document.getElementById('login-modal');
-    m.hidden = true;
-    m.style.display = 'none';
-    document.body.style.overflow = '';
-    var err = document.getElementById('login-error');
-    if (err) { err.hidden = true; err.textContent = ''; }
-  }
-
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') closeLoginModal();
-  });
-
-  function submitLogin(e) {
-    e.preventDefault();
-    var account = document.getElementById('login-account').value.trim();
-    var password = document.getElementById('login-password').value;
-    var err = document.getElementById('login-error');
-    var btn = document.getElementById('login-submit');
-    err.hidden = true;
-    if (!account || !password) {
-      err.textContent = '이메일(또는 슬러그)과 비밀번호를 입력해 주세요.';
-      err.hidden = false;
-      return;
-    }
-    btn.disabled = true;
-    btn.textContent = '이동 중...';
-    // 사업자 로그인 라우트 (Rails sessions#new): POST /app/login
-    var url = SOHEE_APP_HOST + '/app/login';
-    var form = document.createElement('form');
-    form.method = 'POST';
-    form.action = url;
-    form.style.display = 'none';
-    var a = document.createElement('input');
-    a.type = 'hidden'; a.name = 'account_or_email'; a.value = account;
-    var p = document.createElement('input');
-    p.type = 'hidden'; p.name = 'password'; p.value = password;
-    form.appendChild(a); form.appendChild(p);
-    document.body.appendChild(form);
-    form.submit();
-  }
-
-  // nav 로그인 클릭도 modal 열기
+  // nav 로그인 클릭은 trycloudflare 도메인으로 직접 이동 (cross-origin form POST 회피)
   document.addEventListener('DOMContentLoaded', function () {
     var navLogin = document.querySelector('a.nav-login');
     if (navLogin) {
-      navLogin.addEventListener('click', function (e) {
-        e.preventDefault();
-        openLoginModal();
-      });
+      navLogin.setAttribute('href', SOHEE_APP_HOST + '/app/login');
+      navLogin.setAttribute('target', '_blank');
+      navLogin.setAttribute('rel', 'noopener noreferrer');
     }
   });
 </script>
