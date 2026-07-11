@@ -250,5 +250,45 @@ Notification.find_or_create_by!(account: acct, kind: "welcome") do |n|
   n.severity = "low"
 end
 
+# === Announcements (전역 공지) ===
+admin_staff = PlatformStaff.find_by(email_address: "platform-admin@workmori.example")
+
+# 1) 환영 공지
+ann_welcome = Announcement.find_or_initialize_by(kind: "info", title: "워크모리 정식 운영을 시작합니다")
+ann_welcome.assign_attributes(
+  body: "안녕하세요, 사장님.\n\n워크모리가 정식 운영을 시작합니다.\n\n• 사업자 자료 업로드 → RAG 지식 자동 구성\n• AI 직원 자동 응대 (Instagram, Threads, Mastodon, Kakao, Naver)\n• 주간 자동 일정 + 검수 + 발행\n• 실시간 결과 리포트\n\n궁금한 점은 운영팀(support@workmori.example)으로 연락 주세요.",
+  audience: "all",
+  status: "published",
+  published_at: Time.current,
+  created_by_platform_staff: admin_staff,
+  priority: 10
+)
+ann_welcome.save!
+
+# 2) 신규 기능 안내
+ann_feature = Announcement.find_or_initialize_by(kind: "changelog", title: "신규 기능: Instagram/Threads 자동 댓글 응대")
+ann_feature.assign_attributes(
+  body: "Instagram과 Threads 댓글에 AI 직원이 자동으로 응대하는 기능이 추가되었습니다.\n\n채널 설정 → 'Engagement 자동응대' 메뉴에서 활성화할 수 있습니다.\n\n• 자동 응대 톤은 AI 직원 페르소나를 따릅니다\n• 위험 키워드(환불, 부작용, 민원 등) 감지 시 사람에게 자동 인계됩니다\n• 인사이트(팔로워/리치/노출)는 6시간마다 자동 수집됩니다",
+  audience: "all",
+  status: "published",
+  published_at: 1.day.ago,
+  created_by_platform_staff: admin_staff,
+  priority: 5
+)
+ann_feature.save!
+
+# 3) 업로드 제한 안내
+ann_limit = Announcement.find_or_initialize_by(kind: "warning", title: "이미지 업로드 권장 사양 안내")
+ann_limit.assign_attributes(
+  body: "Instagram 게시물의 최적 해상도는 1080×1080 (정사각형) 또는 1080×1350 (세로)입니다.\n\n더 큰 파일(2MB 이상)은 발행 시간이 길어질 수 있으니 가능하면 사전 최적화 부탁드립니다.\n\n질문: support@workmori.example",
+  audience: "all",
+  status: "published",
+  published_at: 3.days.ago,
+  created_by_platform_staff: admin_staff,
+  priority: 0
+)
+ann_limit.save!
+
 puts "[seeds] done. Sign-in (business app): owner@demo.example / OwnerPass!23"
 puts "[seeds] done. Sign-in (platform admin): platform-admin@workmori.example / SuperSecret!23"
+puts "[seeds] Announcements: #{Announcement.count} (published: #{Announcement.where(status: 'published').count})"

@@ -192,6 +192,14 @@ Rails.application.routes.draw do
     post "/hermes/test",         to: "hermes#test",        as: :hermes_test
     get  "/hermes/executions",   to: "hermes#executions",  as: :hermes_executions
     get  "/hermes/audit",        to: "hermes#audit",       as: :hermes_audit
+
+    # 공지사항 (전역/계정별, 사업자에게 노출)
+    resources :announcements do
+      member do
+        post :publish
+        post :archive
+      end
+    end
   end
 
   # ActionCable mount (real-time notifications)

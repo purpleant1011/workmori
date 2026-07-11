@@ -1,0 +1,26 @@
+<% content_for(:title, "공지 상세 — WorkMori 플랫폼") %>
+<header class="mb-6">
+  <h1 class="text-2xl font-bold text-slate-900"><%= @announcement.title %></h1>
+  <p class="mt-1 text-sm text-slate-500">
+    <span class="rounded bg-<%= @announcement.kind_color %>-100 px-2 py-0.5 text-xs text-<%= @announcement.kind_color %>-700"><%= @announcement.kind_label %></span>
+    · 대상 <%= @announcement.audience %>
+    <% if @announcement.account %> · 계정 <%= @announcement.account.name %><% else %> · 전역 공지<% end %>
+    · 상태 <%= @announcement.status %>
+    · 게시 <%= @announcement.published_at&.strftime("%Y-%m-%d %H:%M") || "미게시" %>
+  </p>
+</header>
+
+<div class="rounded-md border border-slate-200 bg-white p-6 mb-6">
+  <h2 class="text-lg font-semibold text-slate-900 mb-3">본문</h2>
+  <div class="prose prose-sm max-w-none whitespace-pre-wrap text-slate-800"><%= @announcement.body %></div>
+</div>
+
+<div class="flex gap-2">
+  <% if @announcement.status == "draft" %>
+    <%= button_to "게시", publish_platform_announcement_path(@announcement), method: :post, class: "inline-flex items-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700" %>
+  <% elsif @announcement.status == "published" %>
+    <%= button_to "보관", archive_platform_announcement_path(@announcement), method: :post, class: "inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" %>
+  <% end %>
+  <%= link_to "수정", edit_platform_announcement_path(@announcement), class: "inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" %>
+  <%= link_to "목록", platform_announcements_path, class: "inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" %>
+</div>

@@ -81,3 +81,59 @@
   ·
   <%= link_to "리포트 →", app_reports_path, class: "underline" %>
 </div>
+
+<%# ── 공지사항 영역 (사업자에게 노출) ── %>
+<div class="mt-10">
+  <h2 class="text-xl font-bold mb-3 flex items-center gap-2">
+    <span>📢 공지사항</span>
+    <span class="text-xs font-normal text-slate-500">운영팀이 직접 알려드리는 중요 소식</span>
+  </h2>
+  <% if @announcements.any? %>
+    <div class="space-y-3">
+      <% @announcements.each do |a| %>
+        <div class="border-l-4 border-<%= a.kind_color %>-400 bg-<%= a.kind_color %>-50 rounded-r-md p-4">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="inline-flex items-center rounded bg-<%= a.kind_color %>-100 px-2 py-0.5 text-xs font-medium text-<%= a.kind_color %>-700"><%= a.kind_label %></span>
+            <h3 class="font-semibold text-slate-900"><%= a.title %></h3>
+            <% if a.global? %>
+              <span class="inline-flex items-center rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-600">전체</span>
+            <% end %>
+            <span class="ml-auto text-xs text-slate-500"><%= a.published_at&.strftime("%Y-%m-%d") %></span>
+          </div>
+          <div class="text-sm text-slate-700 whitespace-pre-wrap"><%= a.body %></div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="rounded-md border border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center">
+      <p class="text-sm text-slate-500">현재 게시된 공지가 없습니다.</p>
+    </div>
+  <% end %>
+</div>
+
+<%# ── 내부 운영 정보 (사업자 계정 전용, 사업자가 알고 있어야 할 내부 사항) ── %>
+<details class="mt-8 rounded-md border border-slate-200 bg-white">
+  <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
+    🔧 내부 운영 정보 (참고용)
+  </summary>
+  <div class="px-4 py-3 text-xs text-slate-600 space-y-2 border-t border-slate-100">
+    <div>
+      <strong class="text-slate-800">API 엔드포인트</strong>:
+      <ul class="list-disc pl-5 mt-1 space-y-0.5">
+        <% @internal_info[:api_endpoints].each do |label, url| %>
+          <li><code class="rounded bg-slate-100 px-1.5 py-0.5"><%= label %></code>: <%= url %></li>
+        <% end %>
+      </ul>
+    </div>
+    <div>
+      <strong class="text-slate-800">데모 계정 (사내 검증용)</strong>:
+      <ul class="list-disc pl-5 mt-1 space-y-0.5">
+        <% @internal_info[:demo_accounts].each do |label, email| %>
+          <li><code class="rounded bg-slate-100 px-1.5 py-0.5"><%= label %></code>: <%= email %></li>
+        <% end %>
+      </ul>
+    </div>
+    <div><strong class="text-slate-800">기술 스택</strong>: <code class="rounded bg-slate-100 px-1.5 py-0.5"><%= @internal_info[:stack] %></code></div>
+    <div><strong class="text-slate-800">E2E 테스트</strong>: <code class="rounded bg-slate-100 px-1.5 py-0.5"><%= @internal_info[:e2e_tests] %></code></div>
+  </div>
+</details>

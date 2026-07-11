@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_11_034101) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_11_050717) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -112,6 +112,24 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_11_034101) do
     t.string "fallback_locale", default: "ko", null: false
     t.index ["account_id"], name: "index_ai_employees_on_account_id"
     t.index ["status"], name: "index_ai_employees_on_status"
+  end
+
+  create_table "announcements", force: :cascade do |t|
+    t.bigint "account_id"
+    t.string "kind", default: "info", null: false
+    t.string "title", null: false
+    t.text "body", null: false
+    t.string "audience", default: "all", null: false
+    t.string "status", default: "draft", null: false
+    t.datetime "published_at"
+    t.bigint "created_by_platform_staff_id"
+    t.integer "priority", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "status"], name: "index_announcements_on_account_id_and_status"
+    t.index ["account_id"], name: "index_announcements_on_account_id"
+    t.index ["created_by_platform_staff_id"], name: "index_announcements_on_created_by_platform_staff_id"
+    t.index ["status", "audience", "published_at"], name: "index_announcements_on_status_and_audience_and_published_at"
   end
 
   create_table "api_tokens", force: :cascade do |t|
@@ -1022,6 +1040,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_11_034101) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "solid_cable_messages", force: :cascade do |t|
+    t.binary "channel", null: false
+    t.binary "payload", null: false
+    t.datetime "created_at", null: false
+    t.bigint "channel_hash", null: false
+    t.index ["channel"], name: "index_solid_cable_messages_on_channel"
+    t.index ["channel_hash"], name: "index_solid_cable_messages_on_channel_hash"
+    t.index ["created_at"], name: "index_solid_cable_messages_on_created_at"
+  end
+
   create_table "solid_queue_blocked_executions", force: :cascade do |t|
     t.bigint "job_id", null: false
     t.string "queue_name", null: false
@@ -1263,6 +1291,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_11_034101) do
   add_foreign_key "ai_employee_versions", "ai_employees"
   add_foreign_key "ai_employee_versions", "users", column: "changed_by_user_id"
   add_foreign_key "ai_employees", "accounts"
+  add_foreign_key "announcements", "accounts", on_delete: :cascade
+  add_foreign_key "announcements", "platform_staff", column: "created_by_platform_staff_id", on_delete: :nullify
   add_foreign_key "api_tokens", "accounts"
   add_foreign_key "api_tokens", "service_accounts"
   add_foreign_key "api_tokens", "users"
