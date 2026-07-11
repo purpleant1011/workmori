@@ -67,7 +67,7 @@
 ## I. 용어 / 번역
 
 - 화면 한국어 본문은 `config/locales/ko.yml` 에 집중. 도메인 로직은 i18n key 사용.
-- 브랜드명 "워크모리(WorkMori)" 는 i18n key `brand.name` 으로 일괄 교체. 가칭이므로 `(가칭)` 표시 기본 ON.
+- 브랜드명 "소희 프로젝트(Sohee Project)" 는 i18n key `brand.name` 으로 일괄 교체. 가칭이므로 `(가칭)` 표시 기본 ON.
 
 ## J. 성능
 

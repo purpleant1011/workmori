@@ -9,7 +9,7 @@ class DailyReportMailer < ApplicationMailer
     return false unless owner
     mail(
       to: owner.email_address,
-      subject: "[워크모리] #{account.name} 일간 리포트 (#{@report_date})"
+      subject: "[소희 프로젝트] #{account.name} 일간 리포트 (#{@report_date})"
     )
   end
 end

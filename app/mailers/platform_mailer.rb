@@ -9,6 +9,6 @@ class PlatformMailer < ApplicationMailer
     )
     @url = url
     @expiry_minutes = 30
-    mail to: addr, subject: "[WorkMori] 운영자 매직 링크"
+    mail to: addr, subject: "[Sohee Project] 운영자 매직 링크"
   end
 end

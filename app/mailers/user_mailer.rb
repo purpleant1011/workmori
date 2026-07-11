@@ -9,6 +9,6 @@ class UserMailer < ApplicationMailer
     )
     @url = url
     @expiry_minutes = 30
-    mail to: addr, subject: "[WorkMori] 매직 링크로 로그인"
+    mail to: addr, subject: "[Sohee Project] 매직 링크로 로그인"
   end
 end
