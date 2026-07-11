@@ -1,15 +1,98 @@
-<h1 class="text-xl font-bold mb-4">회사 정보</h1>
-<% if @business_profile.nil? || @business_profile.legal_name.blank? %>
-  <p class="text-slate-500">아직 회사 정보가 등록되지 않았습니다. <a class="underline text-emerald-700" href="<%= app_edit_business_profile_path %>">등록하러 가기</a></p>
+<% content_for :title, "사업장 프로필 · #{@current_account.name}" %>
+
+<div class="flex items-center justify-between mb-4">
+  <div>
+    <h1 class="text-2xl font-bold">🏪 사업장 프로필</h1>
+    <p class="text-xs text-slate-500 mt-0.5">소희 RAG의 기반이 되는 사업장 정보입니다. 이 정보가 정확할수록 소희의 응답이 정확해집니다.</p>
+  </div>
+  <a href="/app/business_profile/edit" class="px-4 py-2 bg-emerald-600 text-white rounded text-sm font-medium hover:bg-emerald-700">✏️ 편집</a>
+</div>
+
+<% if @business_profile.onboarding_complete? %>
+  <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+    ✅ 온보딩이 완료되었습니다. 소희가 이 정보를 기반으로 응답합니다.
+  </div>
 <% else %>
-  <dl class="grid grid-cols-2 gap-y-2 text-sm bg-white p-4 rounded border">
-    <dt class="font-semibold">회사명</dt><dd><%= @business_profile.legal_name %></dd>
-    <dt class="font-semibold">업종</dt><dd><%= @business_profile.industry_code %> / <%= @business_profile.industry_subcategory %></dd>
-    <dt class="font-semibold">대표자</dt><dd><%= @business_profile.owner_name %></dd>
-    <dt class="font-semibold">연락처</dt><dd><%= @business_profile.phone %></dd>
-    <dt class="font-semibold">이메일</dt><dd><%= @business_profile.public_email %></dd>
-    <dt class="font-semibold">주소</dt><dd><%= @business_profile.address %> (<%= @business_profile.region_label %>)</dd>
-    <dt class="font-semibold">소개</dt><dd class="col-span-2"><%= @business_profile.brand_intro %></dd>
-  </dl>
-  <a class="mt-3 inline-block text-emerald-700 underline" href="<%= app_edit_business_profile_path %>">편집</a>
+  <div class="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+    ⚠️ 온보딩이 완료되지 않았습니다. 필수 정보를 모두 입력하면 소희가 활성화됩니다.
+  </div>
 <% end %>
+
+<%# ── 기본 정보 ── %>
+<div class="rounded-lg border border-slate-200 bg-white p-5 mb-4">
+  <h2 class="font-bold text-lg mb-3">기본 정보</h2>
+  <div class="grid grid-cols-2 gap-4 text-sm">
+    <div><span class="text-slate-500">상호</span><div class="font-medium"><%= @business_profile.legal_name %></div></div>
+    <div><span class="text-slate-500">업종</span><div class="font-medium"><%= @business_profile.industry_code&.humanize %></div></div>
+    <div><span class="text-slate-500">대표자</span><div class="font-medium"><%= @business_profile.owner_name %></div></div>
+    <div><span class="text-slate-500">지역</span><div class="font-medium"><%= @business_profile.region_label %></div></div>
+    <div class="col-span-2"><span class="text-slate-500">주소</span><div class="font-medium"><%= @business_profile.address %></div></div>
+  </div>
+</div>
+
+<%# ── 영업시간 ── %>
+<div class="rounded-lg border border-slate-200 bg-white p-5 mb-4">
+  <h2 class="font-bold text-lg mb-3">영업시간</h2>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+    <% %w[mon tue wed thu fri sat sun].each do |day| %>
+      <div class="rounded bg-slate-50 p-2">
+        <div class="font-medium text-xs text-slate-500 uppercase"><%= { "mon" => "월", "tue" => "화", "wed" => "수", "thu" => "목", "fri" => "금", "sat" => "토", "sun" => "일" }[day] %></div>
+        <% hours = (@business_profile.business_hours_json || {})[day] %>
+        <div class="font-medium"><%= hours.is_a?(Array) ? hours.join(" ~ ") : (hours || "—") %></div>
+      </div>
+    <% end %>
+  </div>
+  <% if @business_profile.holidays_json.present? %>
+    <p class="text-xs text-slate-500 mt-2">휴무: <%= Array(@business_profile.holidays_json).join(", ") %></p>
+  <% end %>
+</div>
+
+<%# ── 상품/가격표 ── %>
+<div class="rounded-lg border border-slate-200 bg-white p-5 mb-4">
+  <h2 class="font-bold text-lg mb-3">💰 가격표 (소희가 안내할 수 있는 범위)</h2>
+  <div class="space-y-2">
+    <% Array(@business_profile.products_json).each do |p| %>
+      <div class="flex items-center justify-between border-l-2 border-emerald-400 pl-3 py-2">
+        <div>
+          <p class="font-medium text-sm"><%= p["name"] %></p>
+          <p class="text-xs text-slate-500"><%= p["description"] %> · <%= p["duration"] %></p>
+        </div>
+        <div class="text-emerald-700 font-bold"><%= number_to_currency(p["price"], unit: "₩", precision: 0) %></div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<%# ── FAQ ── %>
+<div class="rounded-lg border border-slate-200 bg-white p-5 mb-4">
+  <h2 class="font-bold text-lg mb-3">❓ FAQ (소희가 직접 답변 가능)</h2>
+  <div class="space-y-2">
+    <% Array(@business_profile.faqs_json).each do |f| %>
+      <details class="rounded border border-slate-100 bg-slate-50 p-3">
+        <summary class="font-medium text-sm cursor-pointer">Q. <%= f["q"] %></summary>
+        <p class="text-xs text-slate-700 mt-2">A. <%= f["a"] %></p>
+      </details>
+    <% end %>
+  </div>
+</div>
+
+<%# ── 인계 규칙 (소희가 답하지 않고 원장님에게 넘기는 주제) ── %>
+<div class="rounded-lg border-2 border-rose-200 bg-rose-50 p-5 mb-4">
+  <h2 class="font-bold text-rose-900 mb-3">⚠️ 원장님께 인계해야 하는 주제 (소희가 답하지 않음)</h2>
+  <div class="flex flex-wrap gap-2">
+    <% Array(@business_profile.escalation_rules_json).each do |r| %>
+      <span class="px-3 py-1 bg-white border border-rose-300 text-rose-700 text-sm rounded-full"><%= r %></span>
+    <% end %>
+  </div>
+  <p class="text-xs text-rose-700 mt-3">이 주제에 대한 문의가 들어오면, 소희는 정중하게 원장님께 연결합니다.</p>
+</div>
+
+<%# ── 채널 ── %>
+<div class="rounded-lg border border-slate-200 bg-white p-5">
+  <h2 class="font-bold text-lg mb-3">📡 우선 운영 채널</h2>
+  <div class="flex flex-wrap gap-2">
+    <% Array(@business_profile.preferred_channels_json).each do |ch| %>
+      <span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded"><%= ch %></span>
+    <% end %>
+  </div>
+</div>

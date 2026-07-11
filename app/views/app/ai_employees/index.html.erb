@@ -1,92 +1,98 @@
-<% content_for(:title, "AI 직원 — 소희 프로젝트") %>
-<header class="mb-6 flex justify-between items-center">
-  <div>
-    <h1 class="text-2xl font-bold">🤖 내 AI 직원</h1>
-    <p class="mt-1 text-sm text-slate-500">사장님이 직접 설정하는 AI 직원 페르소나. 이름·말투·어휘·인계 규칙을 자유롭게.</p>
-  </div>
-  <div class="flex gap-2">
-    <%= link_to "+ 직접 만들기", new_app_ai_employee_path, class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700" %>
-  </div>
-</header>
+<% content_for :title, "AI 직원 (소희) · #{@current_account.name}" %>
 
-<%# 소희 프로젝트 안내 박스 — 첫 진입 시 핵심 가치 전달 %>
-<% if @employees.empty? %>
-  <div class="mb-8 rounded-md border-2 border-indigo-300 bg-gradient-to-r from-indigo-50 to-emerald-50 p-6">
-    <div class="flex items-start gap-3">
-      <div class="text-3xl">🌸</div>
-      <div class="flex-1">
-        <h2 class="text-xl font-bold text-slate-900 mb-2">AI 직원 소희를 만나보세요</h2>
-        <p class="text-sm text-slate-700 mb-3">
-          <strong>소희 프로젝트</strong>는 사장님이 직접 AI 직원 페르소나를 설정하는 관리자 페이지입니다.
-          AI 직원의 이름(기본 "소희" → 자유 변경), 말투, 어휘, 금지어, 인계 규칙을 사장님이 직접 정의할 수 있어요.
-        </p>
-        <p class="text-sm text-slate-700 mb-3">
-          아래 4가지 템플릿 중 하나를 클릭하면 5초 안에 시작하거나, "직접 만들기"로 처음부터 정의하세요.
-        </p>
-      </div>
-    </div>
+<div class="flex items-center justify-between mb-4">
+  <div>
+    <h1 class="text-2xl font-bold">🤖 AI 직원 (소희) · 페르소나</h1>
+    <p class="text-xs text-slate-500 mt-0.5">소희는 4가지 페르소나 템플릿을 제공합니다. 매장의 성격에 맞는 소희를 선택하세요.</p>
+  </div>
+  <%= link_to "+ 새 AI 직원", new_app_ai_employee_path, class: "px-4 py-2 bg-emerald-600 text-white rounded text-sm font-medium hover:bg-emerald-700" %>
+</div>
+
+<% if @is_byreum %>
+  <div class="mb-4 rounded-lg border-2 border-rose-200 bg-gradient-to-r from-rose-50 to-pink-50 p-4">
+    <p class="text-sm text-rose-900">
+      🌸 <strong>바이름 청라점</strong>은 현재 <strong>소희 (기본)</strong> 페르소나로 테스트 운영 중입니다.<br>
+      <span class="text-xs">25년 경력의 이아름 원장님 톤에 맞게 차분하고 고급스럽게, 금지어와 인계 규칙이 설정되어 있어요.</span>
+    </p>
   </div>
 <% end %>
 
-<div class="mb-8">
-  <h2 class="text-lg font-semibold mb-3">🚀 템플릿으로 빠르게 시작</h2>
+<%# ── 4가지 페르소나 템플릿 ── %>
+<div class="rounded-lg border border-slate-200 bg-white p-5 mb-6">
+  <h2 class="font-bold text-lg mb-3">🌸 소희 페르소나 4가지 템플릿</h2>
+  <p class="text-xs text-slate-500 mb-4">아래 템플릿 중 하나를 선택해 시작하세요. 이후 페르소나 화면에서 세밀하게 조정할 수 있습니다.</p>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-    <% AiEmployee::PERSONA_PRESETS.each do |key, preset| %>
-      <div class="rounded-lg border border-slate-200 bg-white p-4 flex flex-col">
-        <div class="text-2xl mb-2">
-          <% case key
-                   when "sohee_basic" then %>🌸
-                    <% when "sohee_cafe" then %>☕
-                    <% when "sohee_salon" then %>✂️
-                    <% when "sohee_expert" then %>💼
-                    <% end %>
+    <% preset = AiEmployee::PERSONA_PRESETS %>
+    <% [
+      ["sohee_basic",   "🌸", "소희 (기본)",     "소상공인 일반", "친근하고 균형 잡힌 기본 페르소나. 1인 매장, 동네 가게에 적합.",        { friendliness: 80, expertise: 70, proactiveness: 60 }],
+      ["sohee_cafe",    "☕", "소희 (카페)",     "카페 · 디저트", "차분하고 따뜻한 톤. 메뉴·원두 소개, 분위기 강조.",                     { friendliness: 85, expertise: 65, proactiveness: 55 }],
+      ["sohee_salon",   "✂️", "소희 (미용실)",   "미용 · 네일 · 피부", "세련되고 친근한 톤. 시술 설명, 예약 안내, 사진 상담에 강함.",         { friendliness: 75, expertise: 85, proactiveness: 45 }],
+      ["sohee_expert",  "💼", "소희 (전문 상담)", "전문 서비스", "차분하고 고급스러운 톤. 25년 경력, 1:1 상담, 프리미엄 서비스에 적합.", { friendliness: 45, expertise: 95, proactiveness: 40 }]
+    ].each do |key, icon, title, sub, desc, default| %>
+      <div class="rounded-lg border-2 border-slate-200 hover:border-emerald-400 bg-gradient-to-br from-white to-slate-50 p-4 transition-all">
+        <div class="text-3xl mb-2"><%= icon %></div>
+        <h3 class="font-bold text-slate-900"><%= title %></h3>
+        <p class="text-xs text-slate-500 mb-2"><%= sub %></p>
+        <p class="text-xs text-slate-600 mb-3 min-h-[3em]"><%= desc %></p>
+        <div class="text-xs space-y-1 mb-3">
+          <div class="flex justify-between"><span class="text-slate-500">친근함</span><span class="font-medium"><%= default[:friendliness] %></span></div>
+          <div class="flex justify-between"><span class="text-slate-500">전문성</span><span class="font-medium"><%= default[:expertise] %></span></div>
+          <div class="flex justify-between"><span class="text-slate-500">능동성</span><span class="font-medium"><%= default[:proactiveness] %></span></div>
         </div>
-        <h3 class="font-semibold text-slate-900 text-sm"><%= preset[:name] %></h3>
-        <p class="text-xs text-slate-500 mt-1 flex-1"><%= preset[:role_label] %></p>
-        <div class="mt-2 text-xs text-slate-600 space-y-0.5">
-          <div>톤: <%= preset[:tone] %></div>
-          <div>전문성: <%= preset[:expertise_level] %>/100</div>
-          <div>친절함: <%= preset[:friendliness] %>/100</div>
-        </div>
-        <%= button_to "이 템플릿으로 시작 →", create_default_app_ai_employees_path(preset: key), method: :post, class: "mt-3 text-xs font-medium text-emerald-700 hover:text-emerald-900 text-left" %>
+        <%= button_to "이 페르소나로 시작", app_ai_employees_path(ai_employee: { persona_preset: key, name: "소희", tone: "calm_professional", status: "active" }), method: :post, class: "block w-full text-center px-3 py-1.5 bg-emerald-600 text-white rounded text-xs font-medium hover:bg-emerald-700" %>
       </div>
     <% end %>
   </div>
 </div>
 
-<h2 class="text-lg font-semibold mb-3">내 AI 직원 (<%= @employees.size %>)</h2>
-
-<% if @employees.any? %>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <% @employees.each do |emp| %>
-      <div class="rounded-lg border border-slate-200 bg-white p-5">
-        <div class="flex items-start justify-between mb-3">
-          <div>
-            <h3 class="font-semibold text-slate-900"><%= emp.name %></h3>
-            <p class="text-xs text-slate-500"><%= emp.role_label %></p>
-          </div>
-          <span class="text-xs px-2 py-0.5 rounded <%= emp.status == "active" ? "bg-emerald-100 text-emerald-700" : emp.status == "draft" ? "bg-slate-100 text-slate-600" : "bg-amber-100 text-amber-700" %>">
-            <%= emp.status %>
-          </span>
+<%# ── 현재 등록된 AI 직원 ── %>
+<h2 class="font-bold text-lg mb-3">현재 매장의 AI 직원</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+  <% @ai_employees.each do |emp| %>
+    <div class="rounded-lg border border-slate-200 bg-white p-4">
+      <div class="flex items-start justify-between mb-2">
+        <div>
+          <h3 class="font-bold text-lg">
+            <%= { "sohee_basic" => "🌸", "sohee_cafe" => "☕", "sohee_salon" => "✂️", "sohee_expert" => "💼" }[emp.persona_preset] || "🌸" %>
+            <%= emp.name %>
+            <span class="text-xs font-normal text-slate-500">(<%= { "sohee_basic" => "기본", "sohee_cafe" => "카페", "sohee_salon" => "미용실", "sohee_expert" => "전문 상담" }[emp.persona_preset] || emp.persona_preset %>)</span>
+          </h3>
+          <p class="text-xs text-slate-500"><%= emp.role_label %></p>
         </div>
-        <div class="text-xs text-slate-600 space-y-1">
-          <div>🎭 톤: <%= emp.tone %></div>
-          <div>🧠 전문성: <%= emp.expertise_level %>/100 · 친절: <%= emp.friendliness %>/100</div>
-          <div>⏰ <%= emp.work_hours_json["start"] %> ~ <%= emp.work_hours_json["end"] %></div>
-          <div>📅 <%= Array(emp.work_days_json).size %>일/주</div>
+        <span class="text-xs px-2 py-0.5 rounded-full <%= emp.status == 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500' %>"><%= emp.status %></span>
+      </div>
+      <div class="grid grid-cols-3 gap-2 my-3 text-xs">
+        <div class="rounded bg-slate-50 p-2 text-center">
+          <div class="font-bold"><%= emp.friendliness %></div>
+          <div class="text-slate-500">친근함</div>
         </div>
-        <div class="mt-4 flex gap-2 text-xs">
-          <%= link_to "설정", app_ai_employee_path(emp), class: "text-indigo-600 hover:underline" %>
-          <%= link_to "수정", edit_app_ai_employee_path(emp), class: "text-indigo-600 hover:underline" %>
-          <%= button_to "복제", duplicate_app_ai_employee_path(emp), method: :post, class: "text-emerald-600 hover:underline" %>
-          <%= button_to "삭제", app_ai_employee_path(emp), method: :delete, data: { turbo_confirm: "정말 삭제하시겠습니까?" }, class: "text-rose-600 hover:underline ml-auto" %>
+        <div class="rounded bg-slate-50 p-2 text-center">
+          <div class="font-bold"><%= emp.expertise_level %></div>
+          <div class="text-slate-500">전문성</div>
+        </div>
+        <div class="rounded bg-slate-50 p-2 text-center">
+          <div class="font-bold"><%= emp.proactiveness %></div>
+          <div class="text-slate-500">능동성</div>
         </div>
       </div>
-    <% end %>
-  </div>
-<% else %>
-  <div class="rounded-md border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
-    <p class="text-sm text-slate-500 mb-3">아직 AI 직원이 없습니다.</p>
-    <p class="text-xs text-slate-400">위 템플릿에서 시작하거나, 직접 만들어보세요.</p>
-  </div>
-<% end %>
+      <% emp_forbidden = Array(emp.forbidden_phrases_json) %>
+      <% if emp_forbidden.any? %>
+        <p class="text-xs text-slate-600 mb-2">금지어: <%= emp_forbidden.first(4).join(", ") %><%= emp_forbidden.size > 4 ? " 외 #{emp_forbidden.size - 4}개" : "" %></p>
+      <% end %>
+      <% emp_handoff = Array(emp.must_handoff_topics_json) %>
+      <% if emp_handoff.any? %>
+        <p class="text-xs text-rose-600 mb-2">인계 주제: <%= emp_handoff.first(4).join(", ") %><%= emp_handoff.size > 4 ? " 외" : "" %></p>
+      <% end %>
+      <div class="flex gap-2 mt-3">
+        <%= link_to "상세보기 →", app_ai_employee_path(emp), class: "text-xs px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded" %>
+        <%= link_to "✏️ 편집", edit_app_ai_employee_path(emp), class: "text-xs px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded" %>
+      </div>
+    </div>
+  <% end %>
+  <% if @ai_employees.empty? %>
+    <div class="col-span-2 rounded-lg border-2 border-dashed border-slate-300 p-8 text-center">
+      <p class="text-slate-500 mb-3">아직 등록된 AI 직원이 없습니다.</p>
+      <p class="text-xs text-slate-400">위 4가지 템플릿 중 하나를 선택해 시작하세요.</p>
+    </div>
+  <% end %>
+</div>

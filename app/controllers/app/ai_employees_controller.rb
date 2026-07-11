@@ -2,7 +2,8 @@ class App::AiEmployeesController < App::BaseController
   before_action :load_employee, only: [:show, :edit, :update, :destroy, :duplicate, :test_message, :add_memory, :remove_memory, :preview_persona]
 
   def index
-    @employees = @current_account.ai_employees.order(:name)
+    @ai_employees = @current_account.ai_employees.order(:name)
+    @is_byreum = @current_account.slug == "byreum-cheongna"
   end
 
   def show

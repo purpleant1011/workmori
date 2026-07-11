@@ -22,7 +22,14 @@
               <%= c.status %>
             </span>
           </div>
-          <p class="text-xs text-slate-500">스코프: <%= Array(JSON.parse(c.scopes_json.to_s.empty? ? "[]" : c.scopes_json)).join(", ").presence || "없음" %></p>
+          <p class="text-xs text-slate-500">
+            스코프: <%= begin
+              parsed = c.scopes_json.is_a?(String) ? JSON.parse(c.scopes_json) : c.scopes_json
+              Array(parsed).map { |s| s.is_a?(Hash) ? (s["scope_kind"] || s[:scope_kind]) : s.to_s }.join(", ")
+            rescue
+              "—"
+            end.presence || "없음" %>
+          </p>
           <div class="flex flex-wrap gap-2 text-sm">
             <% if c.status == "ready" || c.status == "planned" %>
               <%= button_to "활성화", app_channel_activate_path(c), method: :post, class: "px-3 py-1 bg-emerald-600 text-white rounded" %>
