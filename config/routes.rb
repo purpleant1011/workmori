@@ -26,9 +26,9 @@ Rails.application.routes.draw do
     get  "/thanks",  to: "public/contacts#thanks", as: :public_contact_thanks
   end
 
-  # 셀프 회원가입 비활성화: 공개 사이트에서는 "초기 도입 상담 신청"만 안내
-  # 운영자 초대 기반 가입만 허용 (/signup_invitations/...)
-  match "/signup", via: [:get, :post], to: redirect("/contact")
+  # 셀프 회원가입 (사업자만 가능, 14일 무료 체험 자동 부여)
+  get  "/signup", to: "signups#new", as: :signup
+  post "/signup", to: "signups#create"
   get  "/login",             to: "user_sessions#new",  as: :new_user_session
   post "/login",             to: "user_sessions#create", as: :user_sessions
   delete "/logout",          to: "user_sessions#destroy", as: :logout
@@ -46,7 +46,10 @@ Rails.application.routes.draw do
 
   # Business app
   namespace :app do
-    root to: "dashboards#show", as: :root
+    root to: "dashboards#show"
+    get    "/login",                 to: "sessions#new",     as: :login
+    post   "/login",                 to: "sessions#create"
+    delete "/logout",                to: "sessions#destroy", as: :logout
     get  "/business_profile",         to: "business_profiles#show", as: :business_profile
     get  "/business_profile/edit",    to: "business_profiles#edit", as: :edit_business_profile
     patch "/business_profile",        to: "business_profiles#update", as: nil
@@ -161,6 +164,8 @@ Rails.application.routes.draw do
     get  "/safety_logs",                      to: "safety_logs#index",             as: :safety_logs
     get  "/settings",                  to: "settings#show",   as: :settings
     patch "/settings",                 to: "settings#update"
+    get    "/settings/password",       to: "settings#password",        as: :settings_password
+    patch  "/settings/password",       to: "settings#update_password"
     get  "/termination",               to: "terminations#new", as: :new_termination
     post "/termination",               to: "terminations#create", as: :termination
     get  "/termination/new",           to: "terminations#new",  as: :new_termination_alt
@@ -243,6 +248,7 @@ Rails.application.routes.draw do
   # Dev-only convenience: bypass CSRF, sign in a platform staff / business user with given email
   post "/dev_login/platform", to: "dev_overrides#platform_login"
   post "/dev_login/business", to: "dev_overrides#business_login"
+  post "/dev_login/clear_rate_limit", to: "dev_overrides#clear_rate_limit"
 
   # API root (service-account authenticated)
   namespace :api do

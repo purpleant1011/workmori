@@ -3,8 +3,22 @@ class App::BaseController < ApplicationController
   before_action :require_business_sign_in!
   before_action :load_account_context
   before_action :load_setup_readiness
+  before_action :enforce_trial_status!, unless: :skip_trial_check?
 
   private
+
+  def skip_trial_check?
+    # 플랜 페이지, 결제/구독 관련 페이지는 만료된 트라이얼도 접근 가능
+    false # 추후 skip_controller로 확장
+  end
+
+  # 트라이얼 만료 체크 (lazy) — 만료 시 플랜 페이지로 리다이렉트
+  def enforce_trial_status!
+    return unless @current_account
+    return unless @current_account.trial_expired?
+    # 사업장 운영 페이지(/app) 진입만 차단. /app/plans 는 통과.
+    redirect_to app_plans_path, alert: "14일 무료 체험이 종료되었습니다. 정식 플랜을 선택해 주세요."
+  end
 
   def load_account_context
     @current_account = current_account

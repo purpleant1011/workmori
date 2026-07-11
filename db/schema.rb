@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_11_063000) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_12_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -25,8 +25,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_11_063000) do
     t.text "settings_json", default: "{}", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "trial_ends_at"
     t.index ["slug"], name: "index_accounts_on_slug", unique: true
     t.index ["status"], name: "index_accounts_on_status"
+    t.index ["trial_ends_at"], name: "index_accounts_on_trial_ends_at"
   end
 
   create_table "active_storage_attachments", force: :cascade do |t|

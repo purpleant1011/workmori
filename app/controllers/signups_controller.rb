@@ -2,6 +2,7 @@ class SignupsController < ApplicationController
   # 회원가입: IP당 3회/시간 (봇 가입 방지)
   rate_limit to: 3, within: 1.hour, only: :create, by: -> { request.remote_ip }, with: -> {
     flash[:alert] = "가입 시도가 너무 많습니다. 잠시 후 다시 시도해주세요."
+    @signup = SignupForm.new(signup_params_for_render)
     render :new, status: :too_many_requests
   }
 
@@ -28,6 +29,17 @@ class SignupsController < ApplicationController
     params.require(:signup).permit(:business_name, :industry_slug, :owner_name, :email, :phone, :password, :password_confirmation, :terms_accepted, :marketing_consent)
   end
 
+  # rate_limit 핸들러 등 signup_params가 정상 호출되지 않는 경로에서 안전하게 빈 폼으로 채워준다.
+  def signup_params_for_render
+    if params[:signup].is_a?(ActionController::Parameters) || params[:signup].is_a?(Hash)
+      params[:signup].permit(:business_name, :industry_slug, :owner_name, :email, :phone, :password, :password_confirmation, :terms_accepted, :marketing_consent)
+    else
+      {}
+    end
+  rescue ActionController::ParameterMissing
+    {}
+  end
+
   class SignupForm
     include ActiveModel::Model
     attr_accessor :business_name, :industry_slug, :owner_name, :email, :phone, :password, :password_confirmation, :terms_accepted, :marketing_consent
@@ -40,7 +52,14 @@ class SignupsController < ApplicationController
     def save
       return false unless valid?
       ApplicationRecord.transaction do
-        @account = Account.create!(name: business_name, slug: slugify(business_name), status: "active", operator_managed: true, settings_json: { onboarding_state: "self_signup", consents: { marketing: !!marketing_consent } })
+        @account = Account.create!(
+          name: business_name,
+          slug: slugify(business_name),
+          status: "active",
+          operator_managed: true,
+          trial_ends_at: Time.current + Account::TRIAL_DURATION,
+          settings_json: { onboarding_state: "self_signup_trial", consents: { marketing: !!marketing_consent } }
+        )
         @user = User.create!(account: @account, email_address: email, name: owner_name, role: "owner", password: password, password_confirmation: password_confirmation, locale: "ko")
         Membership.create!(user: @user, account: @account, role: "owner")
         if industry_slug.present?

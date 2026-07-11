@@ -88,6 +88,59 @@ plan_addon.assign_attributes(
 )
 plan_addon.save! unless plan_addon.persisted?
 
+# === 바이름 전용 사업자 계정 (byreum) ===
+byreum_acct = Account.find_or_initialize_by(slug: "byreum")
+byreum_acct.assign_attributes(
+  name: "바이름",
+  status: "active",
+  operator_managed: true,
+  operator_managed_by_email: "platform-admin@workmori.example",
+  timezone: "Asia/Seoul",
+  country: "KR",
+  settings_json: { onboarding_state: "byreum-seed", consents: { marketing: false } }
+)
+byreum_acct.save! unless byreum_acct.persisted?
+
+byreum_user = User.find_or_initialize_by(email_address: "byreum@soheeproject.example")
+byreum_user.assign_attributes(
+  account: byreum_acct,
+  name: "바이름",
+  role: "owner",
+  locale: "ko",
+  password: "pass1234!!",
+  password_confirmation: "pass1234!!"
+)
+byreum_user.save! unless byreum_user.persisted?
+
+Membership.find_or_create_by!(user: byreum_user, account: byreum_acct) { |m| m.role = "owner" }
+
+byreum_bp = BusinessProfile.find_or_initialize_by(account: byreum_acct)
+byreum_bp.assign_attributes(
+  industry_code: "beauty",
+  industry_subcategory: "skincare",
+  legal_name: "바이름",
+  trade_name: "바이름",
+  owner_name: "바이름",
+  phone: "010-0000-0000",
+  public_email: "byreum@example.com",
+  address: "—",
+  region_label: "초기 파트너 매장",
+  timezone: "Asia/Seoul",
+  brand_intro: "초기 파트너 사업장.",
+  onboarding_step: 1,
+  onboarding_complete: false,
+  operator_managed: true,
+  business_hours_json: { mon: "10:00-20:00", tue: "10:00-20:00", wed: "closed", thu: "10:00-20:00", fri: "10:00-20:00", sat: "10:00-18:00", sun: "closed" },
+  products_json: [{ name: "기본관리", price_krw: 70000 }],
+  services_json: [{ name: "기본관리", duration_min: 60 }],
+  faqs_json: [{ q: "예약은 어떻게 하나요?", a: "전화 또는 카카오 채널로 안내드립니다." }],
+  forbidden_phrases_json: %w[100% 안전 보장 의사의진료],
+  forbidden_topics_json: %w[시술후100%안전 보장의료기관할인],
+  preferred_channels_json: %w[blog naver],
+  escalation_rules_json: [{ topic: "환불/클레임", handoff_to: "human" }]
+)
+byreum_bp.save! unless byreum_bp.persisted?
+
 # === Demo account + owner (development only) ===
 acct = Account.find_or_initialize_by(slug: "demo-skincare")
 acct.assign_attributes(
@@ -290,5 +343,6 @@ ann_limit.assign_attributes(
 ann_limit.save!
 
 puts "[seeds] done. Sign-in (business app): owner@demo.example / OwnerPass!23"
+puts "[seeds] done. Sign-in (byreum): byreum@soheeproject.example / pass1234!!  (slug: byreum)"
 puts "[seeds] done. Sign-in (platform admin): platform-admin@workmori.example / SuperSecret!23"
 puts "[seeds] Announcements: #{Announcement.count} (published: #{Announcement.where(status: 'published').count})"
