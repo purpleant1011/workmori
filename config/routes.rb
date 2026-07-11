@@ -47,6 +47,7 @@ Rails.application.routes.draw do
   # Business app
   namespace :app do
     root to: "dashboards#show"
+    get "/dashboard", to: "dashboards#show", as: :dashboard
     get    "/login",                 to: "sessions#new",     as: :login
     post   "/login",                 to: "sessions#create"
     delete "/logout",                to: "sessions#destroy", as: :logout
