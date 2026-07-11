@@ -6,12 +6,21 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('공개 사이트 스모크', () => {
-  test('랜딩 페이지가 200 + 핵심 CTA 노출', async ({ page }) => {
-    const res = await page.goto('/');
+  test('랜딩 페이지가 200 + 핵심 CTA 노출', async ({ page, baseURL }) => {
+    // GitHub Pages landing과 백엔드 모두 CTA가 있어야 함
+    const isGhPages = baseURL?.includes('github.io');
+    const url = isGhPages ? `${baseURL}/` : '/';
+    const res = await page.goto(url);
     expect(res?.status()).toBe(200);
-    // "회원가입" 또는 "데모 시작하기" CTA — 실제 페이지에 둘 다 있음
-    const cta = page.locator('a[href="/signup"]').first();
-    await expect(cta).toBeVisible();
+    if (isGhPages) {
+      // GitHub Pages landing: "14일 무료로 시작하기" 또는 "무료로 시작하기"
+      const cta = page.locator('text=/무료로 시작|14일 무료/').first();
+      await expect(cta).toBeVisible();
+    } else {
+      // 백엔드 landing: /signup 링크
+      const cta = page.locator('a[href="/signup"]').first();
+      await expect(cta).toBeVisible();
+    }
   });
 
   test('가격 페이지 핵심 섹션 표시', async ({ page }) => {
