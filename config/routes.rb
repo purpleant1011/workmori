@@ -149,6 +149,7 @@ Rails.application.routes.draw do
     # get  "/automations/executions/:id", to: "automation_executions#show",  as: :automation_execution
     get  "/conversations",                to: "conversations#index",        as: :conversations
     get  "/conversations/:id",            to: "conversations#show",         as: :conversation
+    get  "/confirmations",                to: "confirmations#index",   as: :confirmations
     get  "/handoffs",                  to: "handoffs#index",   as: :handoffs
     get  "/handoffs/:id",              to: "handoffs#show",    as: :handoff
     get  "/handoffs/:id/edit",         to: "handoffs#edit",    as: :edit_handoff
