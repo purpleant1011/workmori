@@ -675,17 +675,12 @@
 
 <script>
   // 앱 호스트 (사업자 로그인 Rails 서버)
-  // - dev:    http://127.0.0.1:3001
-  // - prod:   사용자가 별도 도메인 설정 후 이 값을 환경에 맞춰 교체
+  // - 2026-07-12: prod placeholder(app.soheeproject.example) 제거.
+  //   .example 도메인은 RFC 2606 예약 도메인이라 실제 접속 불가.
+  //   GitHub Pages 데모 단계에서는 항상 dev 호스트로 라우팅.
+  //   prod 도메인 확정 후 이 분기를 dev/prod 환경변수로 교체.
   var SOHEE_APP_HOST = (function () {
-    var host = window.location.hostname;
-    if (host.indexOf('github.io') !== -1) {
-      return 'https://app.soheeproject.example'; // production placeholder
-    }
-    if (host === '127.0.0.1' || host === 'localhost') {
-      return 'http://127.0.0.1:3001';
-    }
-    return 'https://app.soheeproject.example';
+    return 'http://127.0.0.1:3001';
   })();
 
   function openLoginModal(e) {
