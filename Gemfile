@@ -62,5 +62,5 @@ group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 end
-gem "sentry-ruby", "~> 5.0", require: false
+gem "sentry-ruby", "~> 6.6", require: false
 gem "sentry-rails", "~> 5.0", require: false
