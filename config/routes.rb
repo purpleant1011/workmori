@@ -81,7 +81,8 @@ Rails.application.routes.draw do
     get  "/faqs",                   to: "faqs#index",                as: :faqs
     get  "/faqs/new",               to: "faqs#new",                 as: :new_faq
     post "/faqs",                   to: "faqs#create"
-    get  "/faqs/:id",               to: "faqs#show",                as: :faq
+    # P0-3 (2026-07-12): faqs#show placeholder 라우트 제거. FAQ 상세는 목록+편집 인라인으로 처리한다.
+    # get  "/faqs/:id",               to: "faqs#show",                as: :faq
     get  "/faqs/:id/edit",          to: "faqs#edit",                as: :edit_faq
     patch "/faqs/:id",              to: "faqs#update"
     delete "/faqs/:id",             to: "faqs#destroy"
@@ -93,17 +94,19 @@ Rails.application.routes.draw do
     get  "/products",               to: "products#index",            as: :products
     get  "/products/new",           to: "products#new",              as: :new_product
     post "/products",               to: "products#create"
-    get  "/products/:id",           to: "products#show",             as: :product
+    # P0-3 (2026-07-12): products#show placeholder 라우트 제거. 가격표/상품은 목록+편집 인라인.
+    # get  "/products/:id",           to: "products#show",             as: :product
     get  "/products/:id/edit",      to: "products#edit",             as: :edit_product
     patch "/products/:id",          to: "products#update"
     delete "/products/:id",         to: "products#destroy"
-    get  "/services",               to: "services#index",            as: :services
-    get  "/services/new",           to: "services#new",              as: :new_service
-    post "/services",               to: "services#create"
-    get  "/services/:id",           to: "services#show",             as: :service
-    get  "/services/:id/edit",      to: "services#edit",             as: :edit_service
-    patch "/services/:id",          to: "services#update"
-    delete "/services/:id",         to: "services#destroy"
+    # P0-3 (2026-07-12): services placeholder 라우트 제거. 매장 정보 메뉴는 products로 단일화한다.
+    # get  "/services",               to: "services#index",            as: :services
+    # get  "/services/new",           to: "services#new",              as: :new_service
+    # post "/services",               to: "services#create"
+    # get  "/services/:id",           to: "services#show",             as: :service
+    # get  "/services/:id/edit",      to: "services#edit",             as: :edit_service
+    # patch "/services/:id",          to: "services#update"
+    # delete "/services/:id",         to: "services#destroy"
     get  "/channels",               to: "channels#index",            as: :channels
     get  "/channels/new",           to: "channels#new",              as: :new_channel
     post "/channels",               to: "channels#create"
@@ -129,7 +132,8 @@ Rails.application.routes.draw do
     post "/content/items/:id/approve",   to: "content_items#approve",      as: :approve_content_item
     post "/content/items/:id/reject",    to: "content_items#reject",       as: :reject_content_item
     post "/content/items/:id/archive",   to: "content_items#archive",      as: :archive_content_item
-    get  "/automations",                to: "automation_rules#dashboard",  as: :automation_dashboard
+    # P0-3 (2026-07-12): automation_dashboard placeholder 라우트 제거. 자동화 모니터링은 운영자 콘솔로 이동.
+    # get  "/automations",                to: "automation_rules#dashboard",  as: :automation_dashboard
     get  "/automations/rules",          to: "automation_rules#index",      as: :automation_rules
     get  "/automations/rules/new",      to: "automation_rules#new",        as: :new_automation_rule
     post "/automations/rules",          to: "automation_rules#create",     as: nil
@@ -137,11 +141,12 @@ Rails.application.routes.draw do
     get  "/automations/rules/:id/edit", to: "automation_rules#edit",       as: :edit_automation_rule
     patch "/automations/rules/:id",     to: "automation_rules#update"
     delete "/automations/rules/:id",    to: "automation_rules#destroy"
-    post "/automations/rules/:id/activate", to: "automation_rules#activate",  as: :activate_automation_rule
+    post "/automations/rules/:id/activate",  to: "automation_rules#activate",  as: :activate_automation_rule
     post "/automations/rules/:id/pause",    to: "automation_rules#pause",     as: :pause_automation_rule
     post "/automations/rules/:id/run_now",  to: "automation_rules#run_now",   as: :run_automation_rule
-    get  "/automations/executions",     to: "automation_executions#index", as: :automation_executions
-    get  "/automations/executions/:id", to: "automation_executions#show",  as: :automation_execution
+    # P0-3 (2026-07-12): automation_executions placeholder 라우트 제거. 자동화 실행 로그는 운영자 콘솔에서 본다.
+    # get  "/automations/executions",     to: "automation_executions#index", as: :automation_executions
+    # get  "/automations/executions/:id", to: "automation_executions#show",  as: :automation_execution
     get  "/conversations",                to: "conversations#index",        as: :conversations
     get  "/conversations/:id",            to: "conversations#show",         as: :conversation
     get  "/handoffs",                  to: "handoffs#index",   as: :handoffs
@@ -150,21 +155,25 @@ Rails.application.routes.draw do
     patch "/handoffs/:id",             to: "handoffs#update"
     post "/handoffs/:id/acknowledge",  to: "handoffs#acknowledge", as: :acknowledge_handoff
     post "/handoffs/:id/resolve",      to: "handoffs#resolve", as: :resolve_handoff
-    get  "/plans",                     to: "plans#index",      as: :plans
-    get  "/billing",                   to: "billing#index",    as: :billing
-    post "/billing/pay",               to: "billing#pay",       as: :billing_pay
-    post "/billing/subscribe",         to: "billing#subscribe", as: :billing_subscribe
-    post "/billing/cancel",            to: "billing#cancel_subscription", as: :billing_cancel
-    get  "/billing/invoice/:id",       to: "billing#show",     as: :billing_invoice
-    get  "/referrals",                 to: "referrals#index",  as: :referrals
-    post "/referrals",                 to: "referrals#create", as: nil
+    # P0-3 (2026-07-12): plans/billing/referrals placeholder 라우트 제거. 운영팀이 직접 협상한다.
+    # get  "/plans",                     to: "plans#index",      as: :plans
+    # get  "/billing",                   to: "billing#index",    as: :billing
+    # post "/billing/pay",               to: "billing#pay",       as: :billing_pay
+    # post "/billing/subscribe",         to: "billing#subscribe", as: :billing_subscribe
+    # post "/billing/cancel",            to: "billing#cancel_subscription", as: :billing_cancel
+    # get  "/billing/invoice/:id",       to: "billing#show",     as: :billing_invoice
+    # get  "/referrals",                 to: "referrals#index",  as: :referrals
+    # post "/referrals",                 to: "referrals#create", as: nil
     get  "/reports",                          to: "reports#index",                 as: :reports
     get  "/reports/weekly/:id",               to: "reports#show_weekly",           as: :report_weekly
     post "/reports/trigger_daily",            to: "reports#trigger_daily",         as: :trigger_daily_reports
     post "/reports/trigger_weekly",           to: "reports#trigger_weekly",        as: :trigger_weekly_reports
     get  "/delivery_logs",                    to: "delivery_logs#index",           as: :delivery_logs
-    get  "/audit_events",                     to: "audit_events#index",            as: :audit_events
-    get  "/safety_logs",                      to: "safety_logs#index",             as: :safety_logs
+    # P0-3 (2026-07-12): 사업자 화면에서 audit_events/safety_logs/runtime_configs 라우트 차단.
+    # 운영자 콘솔로 이동 (P0-4).
+    # get  "/audit_events",                     to: "audit_events#index",            as: :audit_events
+    # get  "/safety_logs",                      to: "safety_logs#index",             as: :safety_logs
+    # get  "/settings/runtime",                 to: "runtime_configs#index",         as: :runtime_configs
     get  "/settings",                  to: "settings#show",   as: :settings
     patch "/settings",                 to: "settings#update"
     get    "/settings/password",       to: "settings#password",        as: :settings_password
@@ -190,16 +199,16 @@ Rails.application.routes.draw do
     get  "/csat/new",                  to: "csat#new",                  as: :new_csat
     resources :csat, only: [:create]
 
-    # Hermes Runtime Configuration (bundle + heartbeat + version + rollback)
-    resources :runtime_configs do
-      member do
-        post :activate
-        post :rollback
-      end
-      collection do
-        post :heartbeat
-      end
-    end
+    # P0-3 (2026-07-12): Hermes Runtime Configuration은 사업자 화면에서 차단. 운영자 콘솔로 이동 (P0-4).
+    # resources :runtime_configs do
+    #   member do
+    #     post :activate
+    #     post :rollback
+    #   end
+    #   collection do
+    #     post :heartbeat
+    #   end
+    # end
   end
 
   # Platform admin
