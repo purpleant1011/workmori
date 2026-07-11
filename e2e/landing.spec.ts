@@ -2,20 +2,20 @@ import { test, expect } from '@playwright/test';
 
 /**
  * 랜딩 페이지 정책 검증 (3차 리뉴얼 — 2026-07-11)
- * - 로고: GitHub Pages /workmori/ 경로로 이동
+ * - 로고: GitHub Pages /sohee/ 경로로 이동
  * - 명칭: "소희 프로젝트" → "sohee"
  * - 로그인: nav + footer에서 로그인 모달 진입 가능 (단일 CTA 정책과 별도 — 회원 진입 보장)
  */
 
 test.describe('랜딩 페이지 정책 (sohee)', () => {
-  test('로고가 /workmori/ 경로로 이동', async ({ page, baseURL }) => {
+  test('로고가 /sohee/ 경로로 이동', async ({ page, baseURL }) => {
     const isGhPages = baseURL?.includes('github.io');
     const url = isGhPages ? `${baseURL}/` : '/';
     await page.goto(url);
     const logo = page.locator('header a.logo').first();
     await expect(logo).toBeVisible();
     const href = await logo.getAttribute('href');
-    expect(href).toMatch(/\/workmori\/?$/);
+    expect(href).toMatch(/\/sohee\/?$/);
   });
 
   test('로고 텍스트가 sohee', async ({ page }) => {
