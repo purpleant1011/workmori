@@ -40,3 +40,9 @@
 # Playwright report (test output, regenerated every run)
 /playwright-report/
 /test-results/
+
+# Workers (TypeScript) build artifacts + dependencies
+/workers/node_modules/
+/workers/*/dist/
+/workers/*/tsconfig.tsbuildinfo
+/workers/package-lock.json

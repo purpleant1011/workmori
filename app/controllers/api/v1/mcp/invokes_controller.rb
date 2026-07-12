@@ -27,12 +27,15 @@ module Api
             return render json: { error: "tool_not_whitelisted", tool: tool }, status: :bad_request
           end
 
+          payload_value = params[:params]&.to_unsafe_h
+          payload_value = { tool: tool } if payload_value.blank?
+
           sync = RuntimeSync.create!(
             business_profile_id: business_profile_id_from_params,
             direction: "hermes_to_rails",
             topic: tool_to_topic(tool),
             agent_id: params[:agent_id] || "sohee-control-mcp",
-            payload: params[:params]&.to_unsafe_h || {},
+            payload: payload_value,
             idempotency_key: params[:idempotency_key].presence || SecureRandom.uuid,
             status: "pending"
           )
@@ -77,15 +80,22 @@ module Api
         end
 
         def get_active_runtime_config(sync)
-          config = RuntimeConfig.where(business_profile_id: sync.business_profile_id, status: "active").order(version: :desc).first
+          # RuntimeConfig은 account_id 기반 (P1~P2 결정)
+          business = BusinessProfile.find(sync.business_profile_id)
+          config = RuntimeConfig.where(account_id: business.account_id, status: "active").order(version: :desc).first
           return { runtime_config: nil } unless config
           { runtime_config: { id: config.id, version: config.version, bundle: config.bundle_json } }
         end
 
         def request_human_review(sync)
           payload = sync.payload.with_indifferent_access
+          business = BusinessProfile.find(sync.business_profile_id)
+          # ChangeProposal은 ai_employee_id가 required (FK)
+          ai_employee_id = payload[:ai_employee_id].presence || business.account.ai_employees.first&.id
+          raise(ActionController::ParameterMissing, "ai_employee_id") if ai_employee_id.blank?
           proposal = ChangeProposal.create!(
             business_profile_id: sync.business_profile_id,
+            ai_employee_id: ai_employee_id,
             target_kind: payload[:target_kind] || "runtime_config",
             target_field: payload[:target_field],
             proposed_payload: payload[:proposed_payload] || {},
@@ -98,24 +108,37 @@ module Api
 
         def save_content_draft(sync)
           payload = sync.payload.with_indifferent_access
+          business = BusinessProfile.find(sync.business_profile_id)
+          # ContentItem은 account_id 기반
+          ai_employee_id = payload[:ai_employee_id].presence || business.account.ai_employees.first&.id
+          raise(ActionController::ParameterMissing, "ai_employee_id") if ai_employee_id.blank?
           draft = ContentItem.create!(
-            business_profile_id: sync.business_profile_id,
-            kind: "draft",
+            account_id: business.account_id,
+            ai_employee_id: ai_employee_id,
+            content_kind: payload[:content_kind] || "post",
+            state: "draft",
             title: payload[:title] || "(초안)",
             body: payload[:body] || "",
-            metadata: { source: "mcp", agent_id: sync.agent_id }
+            caption: payload[:caption]
           )
           { content_item_id: draft.id }
         end
 
         def report_knowledge_gap(sync)
           payload = sync.payload.with_indifferent_access
-          KnowledgeGap.create!(
-            business_profile_id: sync.business_profile_id,
-            summary: payload[:summary] || "(보강 필요)",
-            context: payload[:context] || {}
+          business = BusinessProfile.find(sync.business_profile_id)
+          # KnowledgeGap은 account_id + question + channel + hit_kind 필수
+          ai_employee_id = payload[:ai_employee_id].presence || business.account.ai_employees.first&.id
+          raise(ActionController::ParameterMissing, "ai_employee_id") if ai_employee_id.blank?
+          gap = KnowledgeGap.create!(
+            account_id: business.account_id,
+            ai_employee_id: ai_employee_id,
+            question: payload[:question] || payload[:summary] || "(보강 필요)",
+            channel: payload[:channel] || "discord",
+            hit_kind: payload[:hit_kind] || "no_answer",
+            status: "open"
           )
-          { recorded: true }
+          { knowledge_gap_id: gap.id }
         end
 
         def post_discord_report(sync)

@@ -34,6 +34,15 @@ class BusinessProfile < ApplicationRecord
 
   belongs_to :account
 
+  # Discord-Native (P1~P2)
+  has_many :discord_workspaces, dependent: :destroy
+  has_many :discord_identities, dependent: :destroy
+  has_many :change_proposals, dependent: :destroy
+  has_many :business_memories, dependent: :destroy
+  has_many :runtime_syncs, dependent: :destroy
+  # 아래 associations는 FK 컬럼이 account_id라 직접 association 불가.
+  # 호출자는 business.account.{ai_employees,knowledge_gaps,content_items,faqs,knowledge_sources,automation_rules}로 접근.
+
   # ActiveStorage 첨부
   has_one_attached :logo
   has_one_attached :cover_image
