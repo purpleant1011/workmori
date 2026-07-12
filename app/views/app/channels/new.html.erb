@@ -11,8 +11,9 @@
       <%= f.text_field :handle, class: "w-full border border-slate-300 rounded-md p-2", placeholder: "예: myshop_official" %>
     </div>
     <div>
-      <%= f.label :external_id, "외부 ID (선택)", class: "block text-sm font-medium mb-1" %>
+      <%= f.label :external_id, "채널 계정 번호 (선택)", class: "block text-sm font-medium mb-1" %>
       <%= f.text_field :external_id, class: "w-full border border-slate-300 rounded-md p-2" %>
+      <p class="text-xs text-slate-500 mt-1">채널에서 발행된 글을 추적할 때 사용하는 번호입니다. 운영팀이 발급해 드릴 수도 있어요.</p>
     </div>
     <div class="flex gap-2">
       <%= f.submit "추가", class: "px-4 py-2 bg-emerald-600 text-white rounded-md" %>

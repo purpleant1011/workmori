@@ -56,6 +56,10 @@ Rails.application.routes.draw do
     get  "/business_profile",         to: "business_profiles#show", as: :business_profile
     get  "/business_profile/edit",    to: "business_profiles#edit", as: :edit_business_profile
     patch "/business_profile",        to: "business_profiles#update", as: nil
+    # P1-5 (2026-07-12): 셋업 마법사. 사업자가 처음 들어왔을 때 단계별로 사업장 정보를 입력.
+    get    "/setup",                  to: "setups#show",              as: :setup
+    patch  "/setup",                  to: "setups#update",            as: :update_setup
+    get    "/setup/skip",             to: "setups#skip",              as: :skip_setup
     resources :ai_employees, only: [:index, :show, :new, :create, :edit, :update, :destroy] do
       collection do
         post :create_default
@@ -121,7 +125,7 @@ Rails.application.routes.draw do
     resources :engagements, only: [:show, :create]
     get  "/content",                to: "content_items#pending_for_review", as: :pending_for_review
     get  "/content/items",          to: "content_items#index",       as: :content_items
-    get  "/content/items/new",      to: "content_items#generate",    as: :new_content_item
+    get  "/content/items/new",      to: "content_items#new",        as: :new_content_item
     post "/content/items",          to: "content_items#generate",    as: :generate_content_item
     get  "/content/items/:id/edit", to: "content_items#edit",        as: :edit_content_item
     get  "/content/items/:id",      to: "content_items#show",        as: :content_item
@@ -288,6 +292,44 @@ Rails.application.routes.draw do
 
   # Errors
   match "/403", to: "public/errors#forbidden", via: :all, as: :err_403
+  # P1-3 (2026-07-12): 사업자 영역(/app/*)에서 매칭되지 않는 URL은 친화적 404 페이지로 보낸다.
+  # 외부 도메인 + development 환경에서도 Rails 디버그 페이지(스택트레이스)가 노출되지 않도록 보호한다.
+  match "*unmatched", to: "public/errors#not_found", via: :all, constraints: lambda { |req|
+    req.path.start_with?("/app/")
+  }
+
+  # ============================================================
+  # Discord-Native API (P1, 2026-07-12)
+  # ============================================================
+  # 워커(Discord Gateway / Hermes MCP / Gemini Conversation) ↔ Rails 내부 API
+  # 인증: X-Internal-Token 헤더 (HERMES_MCP_TOKEN 또는 DISCORD_GATEWAY_SERVICE_TOKEN)
+  # feature flag: discord_native_enabled
+  namespace :api do
+    namespace :v1 do
+      # 헬스 체크는 인증 없이 외부 모니터링에서 호출 가능
+      get "health", to: "health#show", as: :health
+
+      namespace :discord do
+        resources :events, only: [:create]
+      end
+
+      namespace :mcp do
+        resources :invokes, only: [:create], controller: "invokes"
+      end
+
+      namespace :gemini do
+        resources :calls, only: [:create], controller: "calls"
+      end
+
+      resources :runtime_syncs, only: [] do
+        member do
+          post :ack
+          post :nack
+        end
+      end
+    end
+  end
+
   match "/404", to: "public/errors#not_found", via: :all, as: :err_404
   match "/500", to: "public/errors#server_error", via: :all, as: :err_500
 end

@@ -12,13 +12,27 @@
     <strong>🛡️ 안전 안내:</strong> 모든 자동화 규칙은 <strong>원장님 검수 후 발행</strong>이 기본값입니다. 발행 형태(즉시/예약/검수 후)는 규칙 단위로 운영팀과 협의합니다.
   </div>
 
+  <% intent_labels = {
+       "post"        => "📝 글 자동 작성",
+       "reply"       => "💬 자동 응대",
+       "report"      => "📈 보고서 자동 생성",
+       "faq_update"  => "📚 자주 묻는 질문 학습",
+       "data_export" => "📦 데이터 백업"
+     }
+     state_labels = {
+       "active"    => "동작 중",
+       "paused"    => "일시 정지",
+       "completed" => "완료",
+       "failed"    => "실패"
+     }
+  %>
   <% if @rules.any? %>
     <div class="bg-white shadow rounded-lg overflow-hidden">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">이름</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Intent</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">종류</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">상태</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">일정</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">최근 실행</th>
@@ -29,15 +43,19 @@
           <% @rules.each do |rule| %>
             <tr>
               <td class="px-4 py-2"><%= link_to rule.name, app_automation_rule_path(rule), class: "text-indigo-600 hover:underline" %></td>
-              <td class="px-4 py-2"><span class="text-xs px-2 py-1 bg-gray-100 rounded"><%= rule.intent_kind %></span></td>
-              <td class="px-4 py-2"><span class="text-xs px-2 py-1 <%= rule.status == 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700' %> rounded"><%= rule.status %></span></td>
+              <td class="px-4 py-2"><span class="text-xs px-2 py-1 bg-gray-100 rounded"><%= intent_labels[rule.intent_kind] || rule.intent_kind %></span></td>
+              <td class="px-4 py-2"><span class="text-xs px-2 py-1 <%= rule.status == 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700' %> rounded"><%= state_labels[rule.status] || rule.status %></span></td>
               <td class="px-4 py-2 text-xs text-gray-600">
                 <% sched = AutomationSchedule.where(automation_rule_id: rule.id).first %>
                 <%= sched&.summary || "(일정 없음)" %>
               </td>
               <td class="px-4 py-2 text-xs text-gray-500">
                 <% last = AutomationExecution.where(automation_rule_id: rule.id).order(finished_at: :desc).first %>
-                <%= last ? "#{last.state} · #{time_ago_in_words(last.finished_at)} 전" : "실행 이력 없음" %>
+                <% if last %>
+                  <%= state_labels[last.state] || last.state %> · <%= time_ago_in_words(last.finished_at) %> 전
+                <% else %>
+                  실행 이력 없음
+                <% end %>
               </td>
               <td class="px-4 py-2">
                 <%= link_to "보기", app_automation_rule_path(rule), class: "text-indigo-600 text-xs px-2" %>
@@ -60,7 +78,5 @@
     </div>
   <% end %>
 
-  <div class="mt-8">
-    <%= link_to "📊 대시보드", app_automation_dashboard_path, class: "text-sm text-indigo-600 hover:underline" %>
-  </div>
+  <%# P0-3 (2026-07-12): 자동화 대시보드는 운영자 콘솔로 이동. 사업자 화면에서는 규칙 목록과 리포트로만 본다. %>
 </div>

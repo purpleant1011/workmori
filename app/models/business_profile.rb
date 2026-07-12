@@ -2,6 +2,24 @@ class BusinessProfile < ApplicationRecord
   include AccountScoped
   include JsonAttr
 
+  INDUSTRY_CODE_LABELS = {
+    "beauty"  => "💄 뷰티",
+    "nail"    => "💅 네일",
+    "skin"    => "✨ 피부관리",
+    "waxing"  => "🧴 왁싱",
+    "brow"    => "👁 눈썹",
+    "lash"    => "👁 속눈썹",
+    "scalp"   => "💆 두피",
+    "food"    => "🍽 외식/카페",
+    "retail"  => "🛍 소매",
+    "medical" => "🏥 의료",
+    "other"   => "기타"
+  }.freeze
+
+  def self.industry_code_labels
+    INDUSTRY_CODE_LABELS.map { |code, label| [label, code] }
+  end
+
   json_attr :business_hours_json, default: {}
   json_attr :holidays_json, default: ->{ [] }
   json_attr :products_json, default: ->{ [] }

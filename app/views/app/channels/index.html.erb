@@ -1,4 +1,23 @@
 <% content_for :title, "채널 관리" %>
+<%
+  status_labels = {
+    "active"   => "✅ 연결됨",
+    "pending"  => "⏳ 연결 중",
+    "ready"    => "🟢 준비됨",
+    "planned"  => "🗓 예정",
+    "paused"   => "⏸ 일시 정지",
+    "disabled" => "🚫 사용 중지",
+    "error"    => "⚠️ 오류"
+  }
+  kind_labels = {
+    "instagram"  => "📷 인스타그램",
+    "threads"    => "🧵 Meta 스레드",
+    "naver_blog" => "📰 네이버 블로그",
+    "naver_place"=> "📍 네이버 플레이스",
+    "x_twitter"  => "🧵 X(트위터)",
+    "daangn"     => "🦄 당근마켓"
+  }
+%>
 <div class="max-w-5xl mx-auto p-6 space-y-5">
   <div class="flex items-center justify-between">
     <h1 class="text-2xl font-bold">채널 관리</h1>
@@ -15,21 +34,13 @@
         <div class="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
           <div class="flex items-center justify-between">
             <div>
-              <h3 class="font-semibold"><%= c.kind.humanize %></h3>
+              <h3 class="font-semibold"><%= kind_labels[c.kind] || c.kind.humanize %></h3>
               <p class="text-sm text-slate-500"><%= c.handle || "—" %></p>
             </div>
             <span class="text-xs px-3 py-1 rounded-full <%= c.status == 'active' ? 'bg-emerald-100 text-emerald-700' : c.status == 'paused' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500' %>">
-              <%= c.status %>
+              <%= status_labels[c.status] || c.status %>
             </span>
           </div>
-          <p class="text-xs text-slate-500">
-            스코프: <%= begin
-              parsed = c.scopes_json.is_a?(String) ? JSON.parse(c.scopes_json) : c.scopes_json
-              Array(parsed).map { |s| s.is_a?(Hash) ? (s["scope_kind"] || s[:scope_kind]) : s.to_s }.join(", ")
-            rescue
-              "—"
-            end.presence || "없음" %>
-          </p>
           <div class="flex flex-wrap gap-2 text-sm">
             <% if c.status == "ready" || c.status == "planned" %>
               <%= button_to "활성화", app_channel_activate_path(c), method: :post, class: "px-3 py-1 bg-emerald-600 text-white rounded" %>
@@ -40,7 +51,7 @@
             <% if c.status == "paused" %>
               <%= button_to "재개", app_channel_resume_path(c), method: :post, class: "px-3 py-1 bg-sky-600 text-white rounded" %>
             <% end %>
-            <%= button_to "해제", "/app/channels/#{c.id}", method: :delete, method: :delete, form: { data: { turbo_confirm: "정말 해제하시겠습니까?" } }, class: "px-3 py-1 bg-rose-600 text-white rounded" %>
+            <%= button_to "해제", app_channel_path(c), method: :delete, form: { data: { turbo_confirm: "정말 해제하시겠습니까?" } }, class: "px-3 py-1 bg-rose-600 text-white rounded" %>
           </div>
         </div>
       <% end %>

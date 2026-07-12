@@ -15,15 +15,17 @@
     <% end %>
     <div>
       <label class="block text-sm font-medium text-slate-700">채널 종류</label>
-      <%= f.text_field :kind, class: "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+      <%= f.text_field :kind, disabled: true, class: "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm bg-slate-50" %>
+      <p class="text-xs text-slate-500 mt-1">채널 종류는 변경할 수 없습니다. 변경이 필요하면 운영팀에 문의하세요.</p>
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-700">핸들</label>
+      <label class="block text-sm font-medium text-slate-700">채널 아이디 (핸들)</label>
       <%= f.text_field :handle, class: "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-700">외부 ID</label>
+      <label class="block text-sm font-medium text-slate-700">채널 계정 번호</label>
       <%= f.text_field :external_id, class: "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm" %>
+      <p class="text-xs text-slate-500 mt-1">채널에서 발행된 글을 추적할 때 사용하는 번호입니다.</p>
     </div>
     <div class="flex justify-end">
       <%= f.submit "저장", class: "rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500" %>

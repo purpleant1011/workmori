@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_12_010000) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_12_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -278,6 +278,27 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_12_010000) do
     t.index ["account_id"], name: "index_budgets_on_account_id"
   end
 
+  create_table "business_memories", force: :cascade do |t|
+    t.bigint "business_profile_id", null: false
+    t.string "scope", default: "short_term", null: false
+    t.string "memory_kind", null: false
+    t.string "subject"
+    t.text "content"
+    t.jsonb "structured_payload"
+    t.string "source_kind", default: "discord", null: false
+    t.bigint "source_discord_event_id"
+    t.float "weight", default: 1.0, null: false
+    t.datetime "expires_at"
+    t.datetime "last_recalled_at"
+    t.integer "recall_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["business_profile_id", "memory_kind"], name: "index_business_memories_on_business_profile_id_and_memory_kind"
+    t.index ["business_profile_id", "scope"], name: "index_business_memories_on_business_profile_id_and_scope"
+    t.index ["business_profile_id"], name: "index_business_memories_on_business_profile_id"
+    t.index ["expires_at"], name: "index_business_memories_on_expires_at"
+  end
+
   create_table "business_profiles", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "legal_name", null: false
@@ -311,6 +332,46 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_12_010000) do
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_business_profiles_on_account_id"
     t.index ["industry_code"], name: "index_business_profiles_on_industry_code"
+  end
+
+  create_table "change_approvals", force: :cascade do |t|
+    t.bigint "change_proposal_id", null: false
+    t.bigint "discriminator_discord_id"
+    t.string "action", null: false
+    t.jsonb "payload_override"
+    t.text "comment"
+    t.string "interaction_token"
+    t.string "message_snapshot"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["change_proposal_id"], name: "index_change_approvals_on_change_proposal_id"
+  end
+
+  create_table "change_proposals", force: :cascade do |t|
+    t.bigint "business_profile_id", null: false
+    t.bigint "discord_message_event_id"
+    t.bigint "ai_employee_id"
+    t.string "target_kind", null: false
+    t.string "target_field"
+    t.jsonb "proposed_payload", null: false
+    t.jsonb "previous_payload"
+    t.text "reason"
+    t.text "user_quote"
+    t.string "status", default: "pending", null: false
+    t.datetime "expires_at"
+    t.datetime "decided_at"
+    t.string "decided_by_discord_id"
+    t.bigint "decided_by_user_id"
+    t.string "applied_runtime_config_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ai_employee_id"], name: "index_change_proposals_on_ai_employee_id"
+    t.index ["business_profile_id", "status"], name: "index_change_proposals_on_business_profile_id_and_status"
+    t.index ["business_profile_id"], name: "index_change_proposals_on_business_profile_id"
+    t.index ["decided_by_user_id"], name: "index_change_proposals_on_decided_by_user_id"
+    t.index ["discord_message_event_id"], name: "index_change_proposals_on_discord_message_event_id"
+    t.index ["expires_at"], name: "index_change_proposals_on_expires_at"
+    t.index ["status"], name: "index_change_proposals_on_status"
   end
 
   create_table "channel_connections", force: :cascade do |t|
@@ -519,6 +580,73 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_12_010000) do
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_deposits_on_account_id"
     t.index ["contract_term_id"], name: "index_deposits_on_contract_term_id"
+  end
+
+  create_table "discord_identities", force: :cascade do |t|
+    t.bigint "business_profile_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "discord_user_id", null: false
+    t.string "discord_username"
+    t.string "discord_discriminator"
+    t.string "role_in_business", default: "staff", null: false
+    t.datetime "verified_at"
+    t.string "verification_code"
+    t.datetime "verification_expires_at"
+    t.jsonb "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["business_profile_id", "user_id"], name: "index_discord_identities_on_business_profile_id_and_user_id", unique: true
+    t.index ["business_profile_id"], name: "index_discord_identities_on_business_profile_id"
+    t.index ["discord_user_id"], name: "index_discord_identities_on_discord_user_id", unique: true
+    t.index ["user_id"], name: "index_discord_identities_on_user_id"
+  end
+
+  create_table "discord_message_events", force: :cascade do |t|
+    t.bigint "business_profile_id"
+    t.bigint "discord_workspace_id"
+    t.bigint "discord_identity_id"
+    t.bigint "snowflake_id", null: false
+    t.bigint "channel_id", null: false
+    t.bigint "guild_id"
+    t.bigint "author_discord_id"
+    t.string "kind", default: "message_create", null: false
+    t.text "content_raw"
+    t.string "intent"
+    t.jsonb "attachments_meta"
+    t.jsonb "embeds_meta"
+    t.jsonb "mentions_meta"
+    t.boolean "processed", default: false, null: false
+    t.datetime "processed_at"
+    t.string "processing_error"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["business_profile_id"], name: "index_discord_message_events_on_business_profile_id"
+    t.index ["channel_id"], name: "index_discord_message_events_on_channel_id"
+    t.index ["created_at"], name: "index_discord_message_events_on_created_at"
+    t.index ["discord_identity_id"], name: "index_discord_message_events_on_discord_identity_id"
+    t.index ["discord_workspace_id", "snowflake_id"], name: "idx_on_discord_workspace_id_snowflake_id_deb825ba79"
+    t.index ["discord_workspace_id"], name: "index_discord_message_events_on_discord_workspace_id"
+    t.index ["processed"], name: "index_discord_message_events_on_processed"
+    t.index ["snowflake_id"], name: "index_discord_message_events_on_snowflake_id", unique: true
+  end
+
+  create_table "discord_workspaces", force: :cascade do |t|
+    t.bigint "business_profile_id", null: false
+    t.bigint "guild_id", null: false
+    t.string "guild_name"
+    t.bigint "default_channel_id"
+    t.string "default_channel_name"
+    t.bigint "sohee_category_id"
+    t.string "status", default: "pending", null: false
+    t.datetime "connected_at"
+    t.datetime "last_event_at"
+    t.string "connected_by_discord_id"
+    t.jsonb "guild_meta"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["business_profile_id"], name: "index_discord_workspaces_on_business_profile_id"
+    t.index ["guild_id"], name: "index_discord_workspaces_on_guild_id", unique: true
+    t.index ["status"], name: "index_discord_workspaces_on_status"
   end
 
   create_table "document_chunks", force: :cascade do |t|
@@ -1024,12 +1152,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_12_010000) do
     t.datetime "rolled_back_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "compiled_at"
+    t.string "compiled_by_agent_id"
+    t.bigint "source_change_proposal_id"
     t.index ["account_id", "created_at"], name: "index_runtime_configs_on_account_id_and_created_at"
     t.index ["account_id", "status"], name: "index_runtime_configs_on_account_id_and_status"
     t.index ["account_id", "version"], name: "index_runtime_configs_on_account_id_and_version"
     t.index ["account_id"], name: "index_runtime_configs_on_account_id"
     t.index ["activated_by_id"], name: "index_runtime_configs_on_activated_by_id"
+    t.index ["compiled_at"], name: "index_runtime_configs_on_compiled_at"
     t.index ["rolled_back_by_id"], name: "index_runtime_configs_on_rolled_back_by_id"
+    t.index ["source_change_proposal_id"], name: "index_runtime_configs_on_source_change_proposal_id"
   end
 
   create_table "runtime_heartbeats", force: :cascade do |t|
@@ -1047,6 +1180,29 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_12_010000) do
     t.index ["account_id"], name: "index_runtime_heartbeats_on_account_id"
     t.index ["runtime_config_id", "checked_at"], name: "index_runtime_heartbeats_on_runtime_config_id_and_checked_at"
     t.index ["runtime_config_id"], name: "index_runtime_heartbeats_on_runtime_config_id"
+  end
+
+  create_table "runtime_syncs", force: :cascade do |t|
+    t.bigint "business_profile_id", null: false
+    t.string "direction", null: false
+    t.string "topic", null: false
+    t.string "agent_id"
+    t.jsonb "payload", null: false
+    t.jsonb "response_payload"
+    t.string "status", default: "pending", null: false
+    t.integer "attempts", default: 0, null: false
+    t.integer "max_attempts", default: 3, null: false
+    t.datetime "delivered_at"
+    t.datetime "acked_at"
+    t.datetime "next_retry_at"
+    t.text "error_message"
+    t.string "idempotency_key", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["business_profile_id", "direction"], name: "index_runtime_syncs_on_business_profile_id_and_direction"
+    t.index ["business_profile_id"], name: "index_runtime_syncs_on_business_profile_id"
+    t.index ["idempotency_key"], name: "index_runtime_syncs_on_idempotency_key", unique: true
+    t.index ["status", "next_retry_at"], name: "index_runtime_syncs_on_status_and_next_retry_at"
   end
 
   create_table "safety_logs", force: :cascade do |t|
@@ -1375,7 +1531,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_12_010000) do
   add_foreign_key "automation_schedules", "accounts"
   add_foreign_key "automation_schedules", "automation_rules"
   add_foreign_key "budgets", "accounts"
+  add_foreign_key "business_memories", "business_profiles"
   add_foreign_key "business_profiles", "accounts"
+  add_foreign_key "change_approvals", "change_proposals"
+  add_foreign_key "change_proposals", "ai_employees"
+  add_foreign_key "change_proposals", "business_profiles"
+  add_foreign_key "change_proposals", "discord_message_events"
+  add_foreign_key "change_proposals", "users", column: "decided_by_user_id"
   add_foreign_key "channel_connections", "accounts"
   add_foreign_key "channel_connections", "ai_employees"
   add_foreign_key "channel_connections", "users", column: "connected_by_user_id"
@@ -1401,6 +1563,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_12_010000) do
   add_foreign_key "delivery_logs", "accounts"
   add_foreign_key "deposits", "accounts"
   add_foreign_key "deposits", "contract_terms"
+  add_foreign_key "discord_identities", "business_profiles"
+  add_foreign_key "discord_identities", "users"
+  add_foreign_key "discord_message_events", "business_profiles"
+  add_foreign_key "discord_message_events", "discord_identities"
+  add_foreign_key "discord_message_events", "discord_workspaces"
+  add_foreign_key "discord_workspaces", "business_profiles"
   add_foreign_key "document_chunks", "accounts"
   add_foreign_key "document_chunks", "knowledge_documents"
   add_foreign_key "embeddings", "accounts"
@@ -1455,6 +1623,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_12_010000) do
   add_foreign_key "runtime_configs", "users", column: "rolled_back_by_id"
   add_foreign_key "runtime_heartbeats", "accounts"
   add_foreign_key "runtime_heartbeats", "runtime_configs"
+  add_foreign_key "runtime_syncs", "business_profiles"
   add_foreign_key "service_accounts", "accounts"
   add_foreign_key "services", "accounts"
   add_foreign_key "sessions", "users"

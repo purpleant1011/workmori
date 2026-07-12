@@ -1,27 +1,51 @@
 <% content_for :title, "채널 상세" %>
+<%
+  status_labels = {
+    "active"   => "✅ 연결됨",
+    "pending"  => "⏳ 연결 중",
+    "paused"   => "⏸ 일시 정지",
+    "disabled" => "🚫 사용 중지",
+    "error"    => "⚠️ 오류"
+  }
+  attempt_state_labels = {
+    "succeeded" => "성공",
+    "failed"    => "실패",
+    "queued"    => "대기 중",
+    "running"   => "진행 중"
+  }
+  kind_labels = {
+    "instagram"  => "📷 인스타그램",
+    "threads"    => "🧵 Meta 스레드",
+    "naver_blog" => "📰 네이버 블로그",
+    "naver_place"=> "📍 네이버 플레이스",
+    "x_twitter"  => "🧵 X(트위터)",
+    "daangn"     => "🦄 당근마켓"
+  }
+%>
 <div class="max-w-3xl mx-auto p-6 space-y-5">
   <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold"><%= @channel.kind.humanize %></h1>
-    <span class="text-sm px-3 py-1 rounded-full <%= @channel.status == 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100' %>"><%= @channel.status %></span>
+    <h1 class="text-2xl font-bold"><%= kind_labels[@channel.kind] || @channel.kind.humanize %></h1>
+    <span class="text-sm px-3 py-1 rounded-full <%= @channel.status == 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100' %>"><%= status_labels[@channel.status] || @channel.status %></span>
   </div>
 
   <div class="rounded-xl border border-slate-200 bg-white p-5 space-y-2">
-    <p><span class="text-slate-500">핸들:</span> <%= @channel.handle || "—" %></p>
-    <p><span class="text-slate-500">외부 ID:</span> <%= @channel.external_id || "—" %></p>
-    <p><span class="text-slate-500">연결자:</span> <%= @channel.connected_by_user&.email_address || @channel.connected_by_kind %></p>
-    <p><span class="text-slate-500">마지막 검증:</span> <%= @channel.last_verified_at || "미검증" %></p>
+    <p><span class="text-slate-500">채널 아이디:</span> <%= @channel.handle || "—" %></p>
+    <p><span class="text-slate-500">채널 계정 번호:</span> <%= @channel.external_id || "—" %></p>
+    <p><span class="text-slate-500">연결한 사람:</span> <%= @channel.connected_by_user&.name || @channel.connected_by_kind %></p>
+    <p><span class="text-slate-500">마지막 확인:</span> <%= @channel.last_verified_at&.strftime("%Y-%m-%d %H:%M") || "아직 확인 전" %></p>
     <p><span class="text-slate-500">연결일:</span> <%= @channel.created_at.strftime("%Y-%m-%d %H:%M") %></p>
   </div>
 
+  <%# P1-3 (2026-07-12): scope(권한 범위) 정보는 사업자에게 노출하지 않는다. 운영팀이 설정/관리. %>
   <% begin %>
     <% scopes = JSON.parse(@channel.scopes_json.to_s.empty? ? "[]" : @channel.scopes_json.to_s) %>
     <% scopes = [] unless scopes.is_a?(Array) %>
   <% rescue JSON::ParserError, TypeError %>
     <% scopes = [] %>
   <% end %>
-  <% if scopes.any? %>
+  <% if false && scopes.any? %>
     <div class="rounded-xl border border-slate-200 bg-white p-5">
-      <h2 class="font-semibold mb-2">스코프</h2>
+      <h2 class="font-semibold mb-2">권한 범위</h2>
       <ul class="text-sm space-y-1"><% scopes.each do |s| %><li>• <%= s.is_a?(Hash) ? (s["label"] || s["name"] || s.to_s) : s %></li><% end %></ul>
     </div>
   <% end %>
@@ -33,15 +57,25 @@
       <p class="text-slate-500 text-sm">발행 이력이 없습니다.</p>
     <% else %>
       <table class="w-full text-sm">
-        <thead><tr class="text-left text-slate-500"><th>시각</th><th>상태</th><th>시도횟수</th><th>외부 ID</th><th>콘텐츠</th></tr></thead>
+        <thead><tr class="text-left text-slate-500"><th>시각</th><th>결과</th><th>시도 횟수</th><th>채널 글 번호</th><th>콘텐츠</th></tr></thead>
         <tbody>
           <% recent.each do |pa| %>
             <tr class="border-t">
               <td class="py-2"><%= pa.created_at&.strftime("%Y-%m-%d %H:%M") %></td>
-              <td><%= pa.state %></td>
+              <td>
+                <span class="px-2 py-0.5 rounded text-xs <%= pa.state == 'succeeded' ? 'bg-emerald-100 text-emerald-700' : (pa.state == 'failed' ? 'bg-rose-100 text-rose-700' : 'bg-gray-100 text-gray-700') %>">
+                  <%= attempt_state_labels[pa.state] || pa.state %>
+                </span>
+              </td>
               <td><%= pa.attempts %></td>
-              <td class="text-xs"><%= pa.external_id %></td>
-              <td>#<%= pa.content_item_id %></td>
+              <td class="text-xs"><%= pa.external_id || "—" %></td>
+              <td>
+                <% if pa.content_item_id %>
+                  <%= link_to "콘텐츠 ##{pa.content_item_id}", app_content_item_path(pa.content_item_id), class: "text-indigo-600 hover:underline" %>
+                <% else %>
+                  —
+                <% end %>
+              </td>
             </tr>
           <% end %>
         </tbody>

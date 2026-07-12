@@ -1,0 +1,158 @@
+<% content_for :title, "셋업 마법사" %>
+
+<div class="max-w-3xl mx-auto p-6 space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold">🚀 셋업 마법사</h1>
+      <p class="text-xs text-slate-500 mt-0.5">사업장에 맞는 AI 직원을 만들기 위한 첫 단계입니다. 5단계 중 <strong><%= @step %>번째</strong> 단계에 있어요.</p>
+    </div>
+    <% if @business_profile.onboarding_complete? %>
+      <span class="text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">✅ 완료됨</span>
+    <% else %>
+      <span class="text-xs px-3 py-1 rounded-full bg-amber-100 text-amber-700">진행 중 <%= (@business_profile.onboarding_progress_percent || 0) %>%</span>
+    <% end %>
+  </div>
+
+  <%# 진행 표시줄 %>
+  <div class="flex gap-2">
+    <% (1..@total_steps).each do |s| %>
+      <div class="flex-1 h-2 rounded-full <%= s <= @step ? 'bg-emerald-500' : 'bg-slate-200' %>"></div>
+    <% end %>
+  </div>
+
+  <% if flash[:notice] %>
+    <div class="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"><%= flash[:notice] %></div>
+  <% end %>
+
+  <%# 현재 단계 표시 %>
+  <% current_step = [[@step, 1].max, @total_steps].min %>
+  <% step_titles = {
+    1 => "📋 기본 정보",
+    2 => "🎯 브랜드 소개",
+    3 => "🕒 영업시간",
+    4 => "❓ 자주 묻는 질문",
+    5 => "⚠️ 인계 규칙"
+  } %>
+
+  <h2 class="text-lg font-semibold"><%= step_titles[current_step] %></h2>
+
+  <%= form_with model: @business_profile, url: app_update_setup_path, method: :patch, local: true, scope: :business_profile, class: "space-y-4" do |f| %>
+    <%= hidden_field_tag :step, current_step %>
+
+    <% case current_step
+       when 1 %>
+      <div class="rounded-lg border border-slate-200 bg-white p-5 space-y-4">
+        <p class="text-xs text-slate-500">사업자등록증에 적힌 정확한 정보를 입력해 주세요. 잘못된 정보는 자동 검수에서 걸립니다.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <%= f.label :legal_name, "상호 (필수)", class: "block text-sm font-medium mb-1" %>
+            <%= f.text_field :legal_name, class: "w-full border border-slate-300 rounded-md px-3 py-2 text-sm", placeholder: "예: 카페 소희" %>
+          </div>
+          <div>
+            <%= f.label :trade_name, "브랜드명", class: "block text-sm font-medium mb-1" %>
+            <%= f.text_field :trade_name, class: "w-full border border-slate-300 rounded-md px-3 py-2 text-sm" %>
+          </div>
+          <div>
+            <%= f.label :industry_code, "업종 (필수)", class: "block text-sm font-medium mb-1" %>
+            <%= f.select :industry_code, BusinessProfile.industry_code_labels, { include_blank: "선택…" }, class: "w-full border border-slate-300 rounded-md px-3 py-2 text-sm" %>
+          </div>
+          <div>
+            <%= f.label :industry_subcategory, "업종 세부 분류", class: "block text-sm font-medium mb-1" %>
+            <%= f.text_field :industry_subcategory, class: "w-full border border-slate-300 rounded-md px-3 py-2 text-sm" %>
+          </div>
+          <div>
+            <%= f.label :owner_name, "대표자명 (필수)", class: "block text-sm font-medium mb-1" %>
+            <%= f.text_field :owner_name, class: "w-full border border-slate-300 rounded-md px-3 py-2 text-sm" %>
+          </div>
+          <div>
+            <%= f.label :phone, "대표 연락처 (필수)", class: "block text-sm font-medium mb-1" %>
+            <%= f.text_field :phone, class: "w-full border border-slate-300 rounded-md px-3 py-2 text-sm", placeholder: "010-1234-5678" %>
+          </div>
+          <div>
+            <%= f.label :public_email, "공개용 이메일", class: "block text-sm font-medium mb-1" %>
+            <%= f.email_field :public_email, class: "w-full border border-slate-300 rounded-md px-3 py-2 text-sm" %>
+          </div>
+          <div>
+            <%= f.label :region_label, "활동 지역 (필수)", class: "block text-sm font-medium mb-1" %>
+            <%= f.text_field :region_label, class: "w-full border border-slate-300 rounded-md px-3 py-2 text-sm", placeholder: "예: 서울 성수동" %>
+          </div>
+        </div>
+      </div>
+    <% when 2 %>
+      <div class="rounded-lg border border-slate-200 bg-white p-5 space-y-4">
+        <p class="text-xs text-slate-500">소희가 신규 고객에게 우리 매장을 설명할 때 사용하는 정보입니다.</p>
+        <div>
+          <%= f.label :brand_intro, "한 줄 소개 (필수)", class: "block text-sm font-medium mb-1" %>
+          <%= f.text_area :brand_intro, rows: 2, class: "w-full border border-slate-300 rounded-md px-3 py-2 text-sm", placeholder: "예: 성수동의 작은 디저트 카페. 당일 만든 케이크와 핸드드립 커피." %>
+        </div>
+        <div>
+          <%= f.label :target_audience, "주 고객층", class: "block text-sm font-medium mb-1" %>
+          <%= f.text_area :target_audience, rows: 2, class: "w-full border border-slate-300 rounded-md px-3 py-2 text-sm", placeholder: "예: 20-30대 직장인, 동네 주민" %>
+        </div>
+        <div>
+          <%= f.label :differentiators, "차별화 포인트", class: "block text-sm font-medium mb-1" %>
+          <%= f.text_area :differentiators, rows: 2, class: "w-full border border-slate-300 rounded-md px-3 py-2 text-sm", placeholder: "예: 매일 직접 굽는 크루아상, 비건 옵션" %>
+        </div>
+      </div>
+    <% when 3 %>
+      <div class="rounded-lg border border-slate-200 bg-white p-5 space-y-4">
+        <p class="text-xs text-slate-500">요일별 영업시간을 입력해 주세요. 비워두면 "영업시간 문의 필요"로 안내합니다.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <% %w[mon tue wed thu fri sat sun].each do |day| %>
+            <% day_label = { "mon" => "월", "tue" => "화", "wed" => "수", "thu" => "목", "fri" => "금", "sat" => "토", "sun" => "일" }[day] %>
+            <div class="flex items-center gap-2 border border-slate-100 rounded p-2">
+              <span class="font-medium text-sm w-12"><%= day_label %></span>
+              <input type="time" name="business_profile[business_hours_json][<%= day %>][open]" value="<%= (@business_profile.business_hours_json || {})[day]&.first %>" class="border border-slate-300 rounded px-2 py-1 text-sm">
+              <span class="text-slate-500">~</span>
+              <input type="time" name="business_profile[business_hours_json][<%= day %>][close]" value="<%= (@business_profile.business_hours_json || {})[day]&.last %>" class="border border-slate-300 rounded px-2 py-1 text-sm">
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% when 4 %>
+      <div class="rounded-lg border border-slate-200 bg-white p-5 space-y-4">
+        <p class="text-xs text-slate-500">손님들이 자주 묻는 질문과 그 답을 입력해 주세요. 소희가 이 답변으로 바로 응답합니다.</p>
+        <%
+          faqs = Array(@business_profile.faqs_json)
+          faqs = [{"q" => "", "a" => ""}, {"q" => "", "a" => ""}, {"q" => "", "a" => ""}] if faqs.empty?
+        %>
+        <% faqs.each_with_index do |f, i| %>
+          <div class="border border-slate-100 rounded p-3 space-y-2">
+            <p class="text-xs font-medium text-slate-500">질문 <%= i + 1 %></p>
+            <input type="text" name="business_profile[faqs_json][][q]" value="<%= f['q'] %>" placeholder="예: 주차 가능한가요?" class="w-full border border-slate-300 rounded px-2 py-1 text-sm">
+            <p class="text-xs font-medium text-slate-500">답변</p>
+            <textarea name="business_profile[faqs_json][][a]" rows="2" placeholder="예: 네, 건물 뒤편에 무료 주차 5대 가능" class="w-full border border-slate-300 rounded px-2 py-1 text-sm"><%= f['a'] %></textarea>
+          </div>
+        <% end %>
+      </div>
+    <% when 5 %>
+      <div class="rounded-lg border-2 border-rose-200 bg-rose-50 p-5 space-y-4">
+        <p class="text-xs text-rose-700">이 주제에 대한 문의가 들어오면 소희는 답하지 않고 원장님께 연결합니다.</p>
+        <div>
+          <label class="block text-sm font-medium mb-1 text-rose-900">인계할 주제 (한 줄에 하나씩)</label>
+          <textarea name="business_profile[escalation_rules_json][][line]" rows="6" class="w-full border border-rose-200 rounded px-3 py-2 text-sm bg-white" placeholder="<%= "환불 요청\n민원·컴플레인\n단체 예약 10인 이상\n특가 협상" %>"></textarea>
+        </div>
+      </div>
+      <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+        <p class="font-semibold mb-1">🎉 셋업이 거의 끝났습니다!</p>
+        <p>지금 저장하시면 셋업이 완료됩니다. 그 다음부터 소희가 응답을 시작합니다.</p>
+      </div>
+    <% end %>
+
+    <div class="flex justify-between items-center">
+      <%= link_to "← 이전 단계", "#", class: "text-sm text-slate-600 hover:text-slate-900" if current_step > 1 %>
+      <div class="flex gap-2">
+        <%= link_to "건너뛰기", app_skip_setup_path, class: "px-4 py-2 bg-slate-100 text-slate-700 rounded-md text-sm" %>
+        <% if current_step < @total_steps %>
+          <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm font-medium hover:bg-emerald-700">저장하고 다음 →</button>
+        <% else %>
+          <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm font-medium hover:bg-emerald-700">완료하고 시작하기 🎉</button>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="rounded-lg border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
+    <p>💡 <strong>운영팀 지원:</strong> 셋업 도중 막히는 부분이 있으면 <a href="/app/handoffs/new" class="underline font-medium">인계 요청</a>으로 알려 주세요. 운영팀이 함께 도와드립니다.</p>
+  </div>
+</div>
