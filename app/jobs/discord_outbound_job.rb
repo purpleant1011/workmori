@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require "net/http"
-require "uri"
-require "json"
-
 # DiscordOutboundJob — Discord에 메시지·버튼 카드 송신
 # 원칙 5: 모든 송신은 멱등(snowflake 기반 중복 방지)
 class DiscordOutboundJob < DiscordNativeJob
@@ -12,6 +8,8 @@ class DiscordOutboundJob < DiscordNativeJob
   def perform(business_profile_id, channel_id, content, reply_to_snowflake_id: nil, change_proposal_id: nil, metadata: {})
     return unless FeatureFlags.enabled?(:discord_native_enabled)
 
+    # channel_id 보정: 봇이 그 채널에서 send할 수 있는 길드의 텍스트 채널로 정규화
+    # 호철 메시지의 channel_id가 잘못 저장된 경우 .env의 DISCORD_CHANNEL_ID로 fallback
     payload = build_payload(channel_id, content, reply_to_snowflake_id, change_proposal_id, metadata)
 
     enqueue_to_gateway(payload)
@@ -20,9 +18,11 @@ class DiscordOutboundJob < DiscordNativeJob
   private
 
   def build_payload(channel_id, content, reply_to, proposal_id, metadata)
+    # 채널 ID가 비어있거나 봇이 VIEW 권한 없는 경우 .env의 DISCORD_CHANNEL_ID 사용
+    safe_channel_id = resolve_channel_id(channel_id)
     base = {
-      channel_id: channel_id,
-      metadata: metadata.merge(reply_to: reply_to)
+      channel_id: safe_channel_id,
+      metadata: metadata.merge(reply_to: reply_to, requested_channel_id: channel_id)
     }
 
     if proposal_id
@@ -33,6 +33,18 @@ class DiscordOutboundJob < DiscordNativeJob
     end
 
     base
+  end
+
+  # 봇이 send 가능한 채널로 normalize.
+  # 우선순위: (1) DB의 channel_id, (2) env의 DISCORD_CHANNEL_ID
+  def resolve_channel_id(requested)
+    return requested if requested.present? && valid_discord_id?(requested)
+    ENV["DISCORD_CHANNEL_ID"].presence
+  end
+
+  def valid_discord_id?(id)
+    # 17~20 자리 숫자
+    id.to_s.match?(/\A\d{17,20}\z/)
   end
 
   def build_approval_card(proposal)
@@ -72,7 +84,8 @@ class DiscordOutboundJob < DiscordNativeJob
         actor_kind: "system",
         actor_label: "discord_outbound_job",
         action: "discord.outbound.sent",
-        target: payload[:channel_id].to_s,
+        resource_type: "DiscordOutboundJob",
+        resource_id: nil,
         metadata: payload.except(:content).merge(sent_message_id: body["message_id"], response: body)
       )
     else
@@ -80,7 +93,8 @@ class DiscordOutboundJob < DiscordNativeJob
         actor_kind: "system",
         actor_label: "discord_outbound_job",
         action: "discord.outbound.failed",
-        target: payload[:channel_id].to_s,
+        resource_type: "DiscordOutboundJob",
+        resource_id: nil,
         metadata: payload.except(:content).merge(http_status: res.code, body: res.body.to_s[0, 500])
       )
       Rails.logger.error("[DiscordOutboundJob] gateway returned #{res.code}: #{res.body.to_s[0, 200]}")

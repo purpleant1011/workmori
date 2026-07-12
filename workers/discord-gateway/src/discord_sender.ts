@@ -104,8 +104,28 @@ export class DiscordSender {
   }
 
   private async send(payload: SendPayload): Promise<{ id: string }> {
-    const channel = await this.client.channels.fetch(payload.channel_id);
-    if (!channel) throw new Error("channel_not_found");
+    const channel = await this.client.channels.fetch(payload.channel_id).catch((err) => {
+      logger.error("Channel fetch threw", { err: String(err), channelId: payload.channel_id });
+      return null;
+    });
+    if (!channel) {
+      throw new Error(`channel_not_found_or_inaccessible: ${payload.channel_id}`);
+    }
+    // 봇이 그 채널에 VIEW + SEND 권한이 있는지 확인
+    if (channel.isTextBased() && "guildId" in channel && channel.guildId) {
+      const guild = this.client.guilds.cache.get(channel.guildId);
+      const me = guild?.members.me;
+      if (guild && me) {
+        const perms = me.permissionsIn(channel.id);
+        if (!perms.has("ViewChannel") || !perms.has("SendMessages")) {
+          throw new Error(
+            `bot_lacks_permission: view=${perms.has("ViewChannel")} send=${perms.has("SendMessages")} channel=${channel.id} guild=${channel.guildId}`
+          );
+        }
+      } else {
+        throw new Error(`bot_not_in_guild: ${channel.guildId}`);
+      }
+    }
     if (!("send" in channel) || typeof (channel as { send?: unknown }).send !== "function") {
       throw new Error("channel_not_text_writable");
     }

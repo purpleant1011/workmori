@@ -28,9 +28,12 @@ class GenerateDiscordReplyJob < DiscordNativeJob
     )
 
     # 결과를 Discord로 송신
+    # channel_id 보정: .env의 DISCORD_CHANNEL_ID (소희-소통) 가 봇이 send 가능한 정상 채널
+    # message.channelId 변형 등으로 잘못된 ID가 와도 fallback
+    safe_channel = ENV["DISCORD_CHANNEL_ID"].presence || event.channel_id
     DiscordOutboundJob.perform_later(
       business.id,
-      event.channel_id,
+      safe_channel,
       response["text"].to_s,
       reply_to_snowflake_id: event.snowflake_id,
       metadata: { intent: event.intent, memory_ids: memories.map(&:id), provider: response["provider"], model: response["model"] }
@@ -38,9 +41,10 @@ class GenerateDiscordReplyJob < DiscordNativeJob
   rescue AntigravityClient::Error => e
     Rails.logger.error("[GenerateDiscordReplyJob] #{e.message}")
     # 실패 시 안전한 fallback
+    safe_channel = ENV["DISCORD_CHANNEL_ID"].presence || event.channel_id
     DiscordOutboundJob.perform_later(
       event.business_profile_id,
-      event.channel_id,
+      safe_channel,
       "잠시 후 다시 말씀해 주시면 더 정확히 안내드릴게요.",
       reply_to_snowflake_id: event.snowflake_id,
       metadata: { intent: event.intent, error: "antigravity_worker_error" }

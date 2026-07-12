@@ -16,6 +16,12 @@ export const config = {
       .filter(Boolean),
   },
   logLevel: process.env.LOG_LEVEL ?? "info",
+  // 봇이 invite된 guild id 화이트리스트 (콤마 구분)
+  // 비어있으면 모든 guild 수락 (= 기존 동작). 운영에서는 명시.
+  allowedGuildIds: (process.env.DISCORD_ALLOWED_GUILD_IDS ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
 } as const;
 
 export function requireSecret(name: string, value: string): string {
