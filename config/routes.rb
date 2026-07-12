@@ -332,4 +332,13 @@ Rails.application.routes.draw do
 
   match "/404", to: "public/errors#not_found", via: :all, as: :err_404
   match "/500", to: "public/errors#server_error", via: :all, as: :err_500
+
+  # ============================================================
+  # Antigravity CLI OAuth 인증 상태 (P3, 2026-07-12)
+  # ============================================================
+  # agy CLI 의 자체 OAuth 결과를 워커로 확인 + 재인증 안내
+  namespace :antigravity do
+    get  "/status", to: "sessions#status", as: :status
+    get  "/login",  to: "sessions#login",  as: :login
+  end
 end

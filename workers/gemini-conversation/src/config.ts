@@ -8,8 +8,11 @@ export const config = {
     timeoutMs: Number(process.env.GEMINI_REQUEST_TIMEOUT ?? "30") * 1000,
   },
   antigravity: {
-    cliPath: process.env.ANTIGRAVITY_CLI_PATH ?? "",
+    // P3 Antigravity CLI OAuth 통합 (2026-07-12):
+    // 기본값 = "agy" (PATH 의 /Users/hochari/.local/bin/agy)
+    // 사용자가 OAuth 인증 완료 시 자동으로 ~/.gemini/oauth_creds.json 사용
+    cliPath: process.env.ANTIGRAVITY_CLI_PATH ?? "agy",
     agentUrl: process.env.ANTIGRAVITY_AGENT_URL ?? "",
-    model: "antigravity-default",
+    model: process.env.ANTIGRAVITY_DEFAULT_MODEL ?? "Gemini 3.1 Pro (High)",
   },
 } as const;

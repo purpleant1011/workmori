@@ -107,6 +107,13 @@ class Content::Pipeline
     topics_sample = Array(@ai_employee.memory["topics"]).last(3).join(", ")
     seed_text = knowledge_ctx.first&.dig(:snippet).presence || "저희 매장 정보를 알려드릴게요."
 
+    # P3 Antigravity 통합 (2026-07-12): antigravity_cli_enabled 일 때
+    # 워커 호출해 진짜 글 작성. 아니면 템플릿 fallback.
+    if FeatureFlags.enabled?(:antigravity_cli_enabled)
+      draft = build_draft_via_antigravity(persona, topics_sample, seed_text, knowledge_ctx)
+      return draft if draft
+    end
+
     case @intent
     when "feed"
       {
@@ -140,6 +147,68 @@ class Content::Pipeline
         hashtags: ["##{@account.name.gsub(/\s+/, '')}"],
         target_channel_kind: "blog",
       }
+    end
+  end
+
+  def build_draft_via_antigravity(persona, topics_sample, seed_text, knowledge_ctx)
+    bp = BusinessProfile.find_by(account_id: @account.id)
+    memories = bp ? BusinessMemory.recall(business_profile: bp, limit: 5) : []
+    context_memories = memories.map { |m| { id: m.id, scope: m.scope, kind: m.memory_kind, content: m.content } }
+
+    system_prompt = "당신은 소상공인 매장의 SNS 마케터입니다. 한국어로 자연스럽고 진정성 있게 작성하세요."
+    user_prompt = <<~PROMPT
+      매장: #{@account.name}
+      페르소나: #{persona}
+      최근 관심 주제: #{topics_sample.presence || "(없음)"}
+      참고 정보: #{seed_text}
+      작성 형식: #{@intent}
+      출력 형식: {"title": "...", "body": "...", "caption": "...", "hashtags": ["#..."]}
+    PROMPT
+
+    response = AntigravityClient.invoke(
+      business_profile_id: BusinessProfile.find_by(account_id: @account.id)&.id || @account.id,
+      messages: [
+        { role: "system", content: system_prompt },
+        { role: "user", content: user_prompt }
+      ],
+      structured_output: "content_draft",
+      context_memories: context_memories
+    )
+
+    parsed = response["structured"] || parse_text_to_structured(response["text"].to_s)
+    return nil unless parsed.is_a?(Hash)
+
+    {
+      title: parsed["title"].to_s[0, 200].presence || "#{@account.name} 안내",
+      body: parsed["body"].to_s.presence || seed_text,
+      caption: parsed["caption"].to_s,
+      hashtags: Array(parsed["hashtags"]).presence || ["##{@account.name.gsub(/\s+/, '')}"],
+      target_channel_kind: target_channel_for(@intent)
+    }
+  rescue AntigravityClient::Error => e
+    Rails.logger.warn("[Content::Pipeline] antigravity fallback: #{e.message}")
+    nil
+  end
+
+  def parse_text_to_structured(text)
+    return nil unless text.include?("{")
+    json_str = text[text.index("{")..]
+    json_str = json_str[0..json_str.rindex("}")] if json_str.include?("}")
+    JSON.parse(json_str)
+  rescue JSON::ParserError
+    nil
+  end
+
+  def target_channel_for(intent)
+    case intent
+    when "feed" then "instagram_feed"
+    when "blog" then "blog"
+    when "shortform", "reel_script" then "instagram_reel"
+    when "thread" then "threads"
+    when "place_post" then "naver_place"
+    when "daangn_post" then "daangn"
+    when "cardnews" then "instagram_feed"
+    else "blog"
     end
   end
 

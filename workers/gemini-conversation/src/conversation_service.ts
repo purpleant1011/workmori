@@ -45,7 +45,8 @@ export class ConversationService {
         "antigravity_cli_dev",
         new AntigravityCliDevProvider(
           { model: config.antigravity.model, timeoutMs: 30_000 },
-          config.antigravityCliPath
+          config.antigravityCliPath,
+          config.antigravity.model
         )
       );
     }

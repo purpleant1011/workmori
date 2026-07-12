@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-# GenerateDiscordReplyJob — Gemini 호출 → 응답 → Outbound 큐잉
+# GenerateDiscordReplyJob — Antigravity 워커 호출 → 응답 → Outbound 큐잉
 # 원칙: Discord 응답은 항상 OutboundJob을 통해 비동기 송신 (메인 스레드 블로킹 안 함)
+# P3 변경 (2026-07-12): stub → AntigravityClient.invoke 실제 호출
 class GenerateDiscordReplyJob < DiscordNativeJob
   queue_as :default
 
@@ -13,29 +14,36 @@ class GenerateDiscordReplyJob < DiscordNativeJob
 
     # BusinessMemory recall
     memories = BusinessMemory.recall(business_profile: business, limit: 5)
+    context_memories = memories.map { |m| { id: m.id, scope: m.scope, kind: m.memory_kind, content: m.content } }
 
-    # Gemini 워커 호출 (HTTP)
-    response = call_gemini_worker(event: event, memories: memories)
+    # Antigravity 워커 호출 (HTTP)
+    response = AntigravityClient.invoke(
+      business_profile_id: business.id,
+      messages: [
+        { role: "system", content: "당신은 매장 안내 직원입니다. 친절하고 간결하게 한국어로 답하세요." },
+        { role: "user", content: event.safe_content.to_s }
+      ],
+      structured_output: "free",
+      context_memories: context_memories
+    )
 
     # 결과를 Discord로 송신
     DiscordOutboundJob.perform_later(
       business.id,
       event.channel_id,
-      response[:text],
+      response["text"].to_s,
       reply_to_snowflake_id: event.snowflake_id,
-      metadata: response[:metadata]
+      metadata: { intent: event.intent, memory_ids: memories.map(&:id), provider: response["provider"], model: response["model"] }
     )
-  end
-
-  private
-
-  def call_gemini_worker(event:, memories:)
-    base = ENV["RAILS_INTERNAL_API_BASE"].presence || "http://localhost:3000"
-    # 실제 워커는 별도 프로세스 — 우리는 결과를 받는 측이므로 워커가 직접 호출
-    # 여기서는 워커가 결과를 /api/v1/gemini/call에 보고한다고 가정하고 stub 응답
-    {
-      text: "(stub) 메모리 #{memories.size}개 반영해 답변합니다. 원문: #{event.safe_content}",
-      metadata: { intent: event.intent, memory_ids: memories.map(&:id) }
-    }
+  rescue AntigravityClient::Error => e
+    Rails.logger.error("[GenerateDiscordReplyJob] #{e.message}")
+    # 실패 시 안전한 fallback
+    DiscordOutboundJob.perform_later(
+      event.business_profile_id,
+      event.channel_id,
+      "잠시 후 다시 말씀해 주시면 더 정확히 안내드릴게요.",
+      reply_to_snowflake_id: event.snowflake_id,
+      metadata: { intent: event.intent, error: "antigravity_worker_error" }
+    )
   end
 end
