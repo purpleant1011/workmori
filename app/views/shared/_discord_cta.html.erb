@@ -1,0 +1,26 @@
+<%# ── 명세 §11/§12: Discord CTA 카드 (모든 사업자 페이지 sidebar/footer) ── %>
+<%
+  discord_invite_url = ENV["SOHEE_DISCORD_INVITE_URL"].presence ||
+                       ENV["DISCORD_INVITE_URL"].presence ||
+                       "#"
+  has_invite = discord_invite_url.present? && discord_invite_url != "#"
+  pending_count = (@current_account&.handoffs&.where(state: %w[open acknowledged])&.count || 0)
+%>
+<aside class="mt-4 rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-xs text-indigo-900">
+  <p class="font-semibold mb-1">💬 Discord에서 소희와 대화하기</p>
+  <p class="text-indigo-800 leading-relaxed mb-2">
+    <% if pending_count.positive? %>
+      확인이 필요한 일 <strong class="font-bold"><%= pending_count %>건</strong>이 있습니다.
+    <% else %>
+      관리자 화면을 공부하지 않아도 됩니다.
+    <% end %>
+    <br>소희에게 직접 말하세요.
+  </p>
+  <% if has_invite %>
+    <%= link_to "Discord 열기 →", discord_invite_url, target: "_blank", rel: "noopener", class: "inline-flex items-center px-2.5 py-1 rounded bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700" %>
+  <% else %>
+    <span class="inline-flex items-center px-2.5 py-1 rounded bg-slate-200 text-slate-600 text-xs font-medium cursor-not-allowed" title="초대 링크는 운영팀 설정 대기">
+      초대 링크 준비 중
+    </span>
+  <% end %>
+</aside>

@@ -2,6 +2,19 @@ module App
   class ChannelsController < BaseController
     def index
       @channels = @current_account.channel_connections.includes(:channel_scopes, :ai_employee).order(:kind)
+      # 명세 §10: 채널별 마지막 성공/실패/예정 시각 (PublicationAttempt 기반)
+      @channel_status = {}
+      @channels.each do |ch|
+        attempts = PublicationAttempt.where(channel_connection_id: ch.id).order(created_at: :desc).limit(20)
+        last_success = attempts.where(state: "success").first
+        last_failure = attempts.where(state: %w[failed error]).first
+        next_scheduled = attempts.where(state: "scheduled").order(created_at: :asc).first
+        @channel_status[ch.id] = {
+          last_success_at: last_success&.created_at,
+          last_failure_at: last_failure&.created_at,
+          next_scheduled_at: next_scheduled&.created_at
+        }
+      end
     end
 
     def show
