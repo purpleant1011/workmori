@@ -69,13 +69,12 @@
     <% end %>
   </div>
 <% else %>
-  <div class="rounded-lg border border-slate-200 bg-white p-12 text-center">
-    <p class="text-sm text-slate-500">
-      <% case @tab
-         when App::ConversationsController::TAB_NEED %>✅ 원장님 답변이 필요한 문의가 없습니다.
-         <% when App::ConversationsController::TAB_SOHEE %>소희가 처리 중인 문의가 없습니다.
-         <% else %>처리 완료된 문의가 여기에 표시됩니다.
-         <% end %>
-    </p>
-  </div>
+  <%= render "shared/empty_state",
+             icon: @tab == App::ConversationsController::TAB_NEED ? "✅" : (@tab == App::ConversationsController::TAB_SOHEE ? "💬" : "📦"),
+             title: case @tab
+                    when App::ConversationsController::TAB_NEED  then "원장님 답변이 필요한 문의가 없습니다."
+                    when App::ConversationsController::TAB_SOHEE then "소희가 처리 중인 문의가 없습니다."
+                    else "처리 완료된 문의가 여기에 표시됩니다."
+                    end,
+             body: "새 문의가 도착하면 여기에 표시됩니다." %>
 <% end %>
