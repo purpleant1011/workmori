@@ -1,0 +1,16 @@
+<%# ── 명세 §4 공통 컴포넌트: PageHeader ── %>
+<%
+  subtitle = local_assigns[:subtitle]
+  actions  = local_assigns[:actions]
+%>
+<header class="mb-6">
+  <h1 class="text-2xl font-bold text-slate-900"><%= title %></h1>
+  <% if subtitle.present? %>
+    <p class="text-xs text-slate-500 mt-1"><%= subtitle %></p>
+  <% end %>
+  <% if actions.present? %>
+    <div class="mt-3 flex gap-2 flex-wrap">
+      <%= actions %>
+    </div>
+  <% end %>
+</header>

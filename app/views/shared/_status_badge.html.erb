@@ -1,0 +1,17 @@
+<%# ── 명세 §4 공통 컴포넌트: StatusBadge ── %>
+<%
+  variant_map = {
+    success:  "bg-emerald-100 text-emerald-700",
+    warning:  "bg-amber-100 text-amber-700",
+    danger:   "bg-rose-100 text-rose-700",
+    info:     "bg-sky-100 text-sky-700",
+    neutral:  "bg-slate-100 text-slate-600",
+    active:   "bg-emerald-100 text-emerald-700",
+    pending:  "bg-sky-100 text-sky-700",
+    paused:   "bg-rose-100 text-rose-700",
+    planned:  "bg-slate-100 text-slate-600",
+    error:    "bg-rose-100 text-rose-700"
+  }
+  klass = variant_map[variant.to_sym] || variant_map[:neutral]
+%>
+<span class="inline-block px-2 py-0.5 rounded text-xs font-medium <%= klass %>"><%= label %></span>
