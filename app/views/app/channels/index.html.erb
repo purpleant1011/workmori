@@ -1,60 +1,117 @@
-<% content_for :title, "채널 관리" %>
+<% content_for :title, "연결 상태 · 소희 프로젝트" %>
+
 <%
   status_labels = {
-    "active"   => "✅ 연결됨",
-    "pending"  => "⏳ 연결 중",
-    "ready"    => "🟢 준비됨",
-    "planned"  => "🗓 예정",
-    "paused"   => "⏸ 일시 정지",
-    "disabled" => "🚫 사용 중지",
-    "error"    => "⚠️ 오류"
+    "active"   => "정상 운영",
+    "pending"  => "준비 중",
+    "ready"    => "승인 대기",
+    "planned"  => "연동 준비",
+    "paused"   => "일시중지",
+    "disabled" => "사용 중지",
+    "error"    => "운영팀 점검 중"
+  }
+  status_color = {
+    "active"   => "bg-emerald-100 text-emerald-700",
+    "pending"  => "bg-sky-100 text-sky-700",
+    "ready"    => "bg-amber-100 text-amber-700",
+    "planned"  => "bg-slate-100 text-slate-600",
+    "paused"   => "bg-rose-100 text-rose-700",
+    "disabled" => "bg-slate-100 text-slate-500",
+    "error"    => "bg-rose-100 text-rose-700"
   }
   kind_labels = {
-    "instagram"  => "📷 인스타그램",
-    "threads"    => "🧵 Meta 스레드",
-    "naver_blog" => "📰 네이버 블로그",
-    "naver_place"=> "📍 네이버 플레이스",
-    "x_twitter"  => "🧵 X(트위터)",
-    "daangn"     => "🦄 당근마켓"
+    "instagram"   => "Instagram",
+    "threads"     => "Threads",
+    "naver_blog"  => "Naver Blog",
+    "naver_place" => "Naver Place",
+    "x_twitter"   => "X (Twitter)",
+    "daangn"      => "Daangn",
+    "discord"     => "Discord"
+  }
+  capabilities = {
+    "instagram"   => "피드 / 캐러셀 / 댓글 수신·답글",
+    "threads"     => "텍스트 게시 / 답글 수신·초안",
+    "naver_blog"  => "포스트 발행 / 이웃 댓글",
+    "naver_place" => "업체 정보 / 리뷰 응대",
+    "x_twitter"   => "트윗 게시 / 답글",
+    "daangn"      => "동네 거래 정보",
+    "discord"     => "소희 대화 / 콘텐츠 검수 / 변경 승인 / 일일 보고"
   }
 %>
-<div class="max-w-5xl mx-auto p-6 space-y-5">
-  <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold">채널 관리</h1>
-    <%= link_to "채널 추가", app_new_channel_path, class: "px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700" %>
-  </div>
 
-  <% if @channels.empty? %>
-    <div class="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">
-      연결된 채널이 없습니다. 채널을 추가해 보세요.
-    </div>
-  <% else %>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <% @channels.each do |c| %>
-        <div class="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="font-semibold"><%= kind_labels[c.kind] || c.kind.humanize %></h3>
-              <p class="text-sm text-slate-500"><%= c.handle || "—" %></p>
-            </div>
-            <span class="text-xs px-3 py-1 rounded-full <%= c.status == 'active' ? 'bg-emerald-100 text-emerald-700' : c.status == 'paused' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500' %>">
-              <%= status_labels[c.status] || c.status %>
-            </span>
-          </div>
-          <div class="flex flex-wrap gap-2 text-sm">
-            <% if c.status == "ready" || c.status == "planned" %>
-              <%= button_to "활성화", app_channel_activate_path(c), method: :post, class: "px-3 py-1 bg-emerald-600 text-white rounded" %>
-            <% end %>
-            <% if c.status == "active" %>
-              <%= button_to "일시정지", app_channel_pause_path(c), method: :post, class: "px-3 py-1 bg-amber-500 text-white rounded" %>
-            <% end %>
-            <% if c.status == "paused" %>
-              <%= button_to "재개", app_channel_resume_path(c), method: :post, class: "px-3 py-1 bg-sky-600 text-white rounded" %>
-            <% end %>
-            <%= button_to "해제", app_channel_path(c), method: :delete, form: { data: { turbo_confirm: "정말 해제하시겠습니까?" } }, class: "px-3 py-1 bg-rose-600 text-white rounded" %>
-          </div>
-        </div>
-      <% end %>
-    </div>
-  <% end %>
+<div class="mb-6">
+  <h1 class="text-2xl font-bold text-slate-900">연결 상태</h1>
+  <p class="text-xs text-slate-500 mt-1">소희가 일하고 있는 채널의 운영 상태입니다. 기술 설정은 운영팀이 관리합니다.</p>
 </div>
+
+<% if @channels.empty? %>
+  <div class="rounded-lg border border-slate-200 bg-white p-12 text-center">
+    <p class="text-sm text-slate-500">아직 연결된 채널이 없습니다.</p>
+    <p class="text-xs text-slate-400 mt-2">운영팀과 도입 상담 후 채널을 연결하실 수 있습니다.</p>
+  </div>
+<% else %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <% @channels.each do |c| %>
+      <article class="rounded-lg border border-slate-200 bg-white p-5">
+        <header class="flex items-start justify-between mb-3">
+          <div>
+            <h3 class="font-bold text-slate-900"><%= kind_labels[c.kind] || c.kind.humanize %></h3>
+            <p class="text-sm text-slate-500"><%= c.handle || "(계정 미설정)" %></p>
+          </div>
+          <span class="text-xs px-3 py-1 rounded-full font-medium <%= status_color[c.status] || 'bg-slate-100 text-slate-500' %>">
+            <%= status_labels[c.status] || c.status %>
+          </span>
+        </header>
+
+        <dl class="space-y-2 text-sm">
+          <div>
+            <dt class="text-xs text-slate-500">가능한 업무</dt>
+            <dd class="text-slate-700 mt-0.5"><%= capabilities[c.kind] || "운영팀과 상담 후 결정" %></dd>
+          </div>
+          <% if c.channel_scopes.any? %>
+            <div>
+              <dt class="text-xs text-slate-500">게시 전 확인 방식</dt>
+              <dd class="text-slate-700 mt-0.5">
+                <% if c.channel_scopes.where(publish_allowed: true).any? %>
+                  자동 게시 (원장님 보고)
+                <% else %>
+                  게시 전 항상 확인
+                <% end %>
+              </dd>
+            </div>
+          <% else %>
+            <div>
+              <dt class="text-xs text-slate-500">게시 전 확인 방식</dt>
+              <dd class="text-slate-700 mt-0.5">운영팀 셋업 대기</dd>
+            </div>
+          <% end %>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <dt class="text-xs text-slate-500">마지막 정상 작업</dt>
+              <dd class="text-slate-700 mt-0.5 text-xs"><%= @channel_status.dig(c.id, :last_success_at)&.strftime("%Y-%m-%d %H:%M") || "기록 없음" %></dd>
+            </div>
+            <div>
+              <dt class="text-xs text-slate-500">다음 예정 작업</dt>
+              <dd class="text-slate-700 mt-0.5 text-xs"><%= @channel_status.dig(c.id, :next_scheduled_at)&.strftime("%Y-%m-%d %H:%M") || "예정 없음" %></dd>
+            </div>
+          </div>
+          <% if (lf = @channel_status.dig(c.id, :last_failure_at)) && lf > 1.day.ago %>
+            <div class="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded px-2 py-1">
+              ⚠️ 최근 24시간 내 작업 실패 — 운영팀이 확인 중입니다.
+            </div>
+          <% end %>
+        </dl>
+
+        <footer class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-2">
+          <% if c.status == "ready" || c.status == "planned" %>
+            <%= button_to "활성화 요청", app_channel_activate_path(c), method: :post, class: "px-3 py-1.5 bg-emerald-600 text-white rounded text-xs font-medium hover:bg-emerald-700" %>
+          <% end %>
+          <% if c.status == "active" %>
+            <%= button_to "긴급 일시중지", app_channel_pause_path(c), method: :post, class: "px-3 py-1.5 bg-rose-100 text-rose-700 rounded text-xs font-medium hover:bg-rose-200" %>
+          <% end %>
+          <%= link_to "상세 보기", app_channel_path(c), class: "px-3 py-1.5 text-slate-600 hover:text-slate-900 text-xs" %>
+        </footer>
+      </article>
+    <% end %>
+  </div>
+<% end %>
