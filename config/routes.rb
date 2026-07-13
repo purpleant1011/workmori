@@ -244,7 +244,25 @@ Rails.application.routes.draw do
     get  "/magic_link/:token",  to: "magic_links#show",    as: :magic_link, constraints: { token: /[^\/]+/ }
 
     resources :accounts do
-      member { post :suspend; post :reactivate }
+      member do
+        post :suspend
+        post :reactivate
+        post :discord_resync
+      end
+      # Per-account operator console (P4): /platform/accounts/:account_id/setup + 11 sibling pages
+      scope module: "accounts" do
+        get "/setup",     to: "consoles#setup",     as: :console_setup
+        get "/persona",   to: "consoles#persona",   as: :console_persona
+        get "/knowledge", to: "consoles#knowledge", as: :console_knowledge
+        get "/channels",  to: "consoles#channels",  as: :console_channels
+        get "/automations", to: "consoles#automations", as: :console_automations
+        get "/runtime",   to: "consoles#runtime",   as: :console_runtime
+        get "/audit",     to: "consoles#audit",     as: :console_audit
+        get "/content",   to: "consoles#content",   as: :console_content
+        get "/inquiries", to: "consoles#inquiries", as: :console_inquiries
+        get "/monitoring", to: "consoles#monitoring", as: :console_monitoring
+        get "/safety",    to: "consoles#safety",    as: :console_safety
+      end
     end
     resources :platform_staff, only: [:index, :show]
     resources :inquiries

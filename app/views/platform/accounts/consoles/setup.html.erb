@@ -1,0 +1,159 @@
+<% content_for(:title, "#{@account.name} · 운영자 콘솔 · 설정 — Sohee Project") %>
+
+<header class="mb-6">
+  <div class="flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-100"><%= @account.name %> · 설정</h1>
+      <p class="mt-1 text-sm text-slate-400">
+        운영자 콘솔 — 이 고객사가 6가지 준비 영역에서 어디까지 왔는지 한 눈에 봅니다.
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <% if @account.status == "suspended" %>
+        <%= button_to "재개", reactivate_platform_account_path(@account), method: :post, class: "px-3 py-1.5 rounded bg-emerald-700 text-emerald-100 hover:bg-emerald-600 text-sm" %>
+      <% else %>
+        <%= button_to "긴급 일시중지", suspend_platform_account_path(@account), method: :post, class: "px-3 py-1.5 rounded bg-rose-700 text-rose-100 hover:bg-rose-600 text-sm" %>
+      <% end %>
+      <%= button_to "Discord 강제 동기화", discord_resync_platform_account_path(@account), method: :post, class: "px-3 py-1.5 rounded bg-slate-700 text-slate-100 hover:bg-slate-600 text-sm" %>
+    </div>
+  </div>
+</header>
+
+<!-- 6-card readiness -->
+<section class="mb-8">
+  <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">준비 상태 (6 영역)</h2>
+  <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <%= render "shared/stat_card",
+        label: "페르소나", icon: "👤", color: "indigo",
+        value: @setup_counts[:ai_employees],
+        hint: @setup_status[:persona] ? "AI 직원 #{@setup_counts[:ai_employees]}명 등록됨" : "AI 직원 미등록" %>
+
+    <%= render "shared/stat_card",
+        label: "지식 (RAG)", icon: "📚", color: "emerald",
+        value: @setup_counts[:knowledge_documents].to_i + @setup_counts[:faqs].to_i,
+        hint: @setup_status[:knowledge] ? "문서 #{@setup_counts[:knowledge_documents]} + FAQ #{@setup_counts[:faqs]}" : "RAG 데이터 없음" %>
+
+    <%= render "shared/stat_card",
+        label: "채널 연결", icon: "🔗", color: "sky",
+        value: @setup_counts[:channel_connections],
+        hint: @setup_status[:channels] ? "연결됨" : "미연결" %>
+
+    <%= render "shared/stat_card",
+        label: "자동 게시 규칙", icon: "🤖", color: "violet",
+        value: @setup_counts[:automation_rules],
+        hint: @setup_status[:automations] ? "운영 중" : "미설정" %>
+
+    <%= render "shared/stat_card",
+        label: "Runtime", icon: "⚙️", color: "amber",
+        value: @setup_counts[:runtime_configs],
+        hint: @setup_status[:runtime] ? "버전 #{@account.runtime_configs.maximum(:version) || 0}" : "초기화 필요" %>
+
+    <%= render "shared/stat_card",
+        label: "Discord", icon: "💬", color: "indigo",
+        value: @setup_status[:discord] ? "✓" : "—",
+        hint: @setup_status[:discord] ? "사업장 채널 연결됨" : "미연결" %>
+  </div>
+</section>
+
+<!-- Pending proposals + recent incidents + heartbeat -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+  <div class="bg-slate-800 rounded-lg border border-slate-700 p-4">
+    <h3 class="text-sm font-semibold text-slate-300 mb-3">승인 대기 변경 제안</h3>
+    <% if @pending_actions.any? %>
+      <ul class="space-y-2">
+        <% @pending_actions.each do |p| %>
+          <li class="text-sm text-slate-200 border-l-2 border-amber-500 pl-3">
+            <div class="font-medium"><%= p.title.presence || "제안 ##{p.id}" %></div>
+            <div class="text-xs text-slate-400"><%= p.created_at&.strftime("%Y-%m-%d %H:%M") %></div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-sm text-slate-500">대기 중인 변경 제안이 없습니다.</p>
+    <% end %>
+  </div>
+
+  <div class="bg-slate-800 rounded-lg border border-slate-700 p-4">
+    <h3 class="text-sm font-semibold text-slate-300 mb-3">최근 인시던트</h3>
+    <% if @recent_incidents.any? %>
+      <ul class="space-y-2">
+        <% @recent_incidents.each do |i| %>
+          <li class="text-sm text-slate-200 border-l-2 border-rose-500 pl-3">
+            <div class="font-medium"><%= i.title.presence || "인시던트 ##{i.id}" %></div>
+            <div class="text-xs text-slate-400"><%= i.status %> · <%= i.severity %> · <%= i.opened_at&.strftime("%Y-%m-%d %H:%M") %></div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-sm text-slate-500">최근 30일 내 열린 인시던트가 없습니다.</p>
+    <% end %>
+  </div>
+
+  <div class="bg-slate-800 rounded-lg border border-slate-700 p-4">
+    <h3 class="text-sm font-semibold text-slate-300 mb-3">Runtime 하트비트</h3>
+    <% if @recent_runtime_heartbeats.any? %>
+      <ul class="space-y-2">
+        <% @recent_runtime_heartbeats.each do |h| %>
+          <li class="text-sm text-slate-200 border-l-2 border-emerald-500 pl-3">
+            <div class="font-medium"><%= h.source %> · <%= h.status %> · config #<%= h.runtime_config_id %></div>
+            <div class="text-xs text-slate-400"><%= h.checked_at&.strftime("%Y-%m-%d %H:%M:%S") %></div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-sm text-slate-500">하트비트 기록이 없습니다.</p>
+    <% end %>
+  </div>
+</section>
+
+<!-- Recent executions -->
+<section class="mb-8">
+  <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">최근 자동 실행</h3>
+  <% if @recent_executions.any? %>
+    <div class="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-900">
+          <tr class="text-left text-slate-400">
+            <th class="px-4 py-2">ID</th>
+            <th class="px-4 py-2">규칙</th>
+            <th class="px-4 py-2">상태</th>
+            <th class="px-4 py-2">시도</th>
+            <th class="px-4 py-2">시작</th>
+            <th class="px-4 py-2">종료</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @recent_executions.each do |e| %>
+            <tr class="border-t border-slate-700">
+              <td class="px-4 py-2 text-slate-300">#<%= e.id %></td>
+              <td class="px-4 py-2 text-slate-200">#<%= e.automation_rule_id %></td>
+              <td class="px-4 py-2"><%= e.state %></td>
+              <td class="px-4 py-2 text-slate-300"><%= e.attempts %> / <%= e.max_attempts %></td>
+              <td class="px-4 py-2 text-slate-400"><%= e.started_at&.strftime("%H:%M:%S") || "—" %></td>
+              <td class="px-4 py-2 text-slate-400"><%= e.finished_at&.strftime("%H:%M:%S") || "진행중" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="text-sm text-slate-500">최근 자동 실행 기록이 없습니다.</p>
+  <% end %>
+</section>
+
+<!-- Quick nav to sibling console pages -->
+<section>
+  <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">콘솔 페이지</h3>
+  <div class="flex flex-wrap gap-2 text-sm">
+    <%= link_to "페르소나", platform_account_console_persona_path(@account), class: "px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200" %>
+    <%= link_to "지식", platform_account_console_knowledge_path(@account), class: "px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200" %>
+    <%= link_to "채널", platform_account_console_channels_path(@account), class: "px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200" %>
+    <%= link_to "자동화", platform_account_console_automations_path(@account), class: "px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200" %>
+    <%= link_to "Runtime", platform_account_console_runtime_path(@account), class: "px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200" %>
+    <%= link_to "콘텐츠", platform_account_console_content_path(@account), class: "px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200" %>
+    <%= link_to "문의", platform_account_console_inquiries_path(@account), class: "px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200" %>
+    <%= link_to "모니터링", platform_account_console_monitoring_path(@account), class: "px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200" %>
+    <%= link_to "감사", platform_account_console_audit_path(@account), class: "px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200" %>
+    <%= link_to "안전", platform_account_console_safety_path(@account), class: "px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200" %>
+  </div>
+</section>

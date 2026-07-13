@@ -1,0 +1,29 @@
+<% content_for(:title, "#{@account.name} · channels — Sohee Project") %>
+
+<header class="mb-6">
+  <nav class="text-xs text-slate-500 mb-2">
+    <a href="<%= platform_root_path %>" class="hover:text-slate-300">운영자</a>
+    <span class="mx-1">/</span>
+    <a href="<%= platform_accounts_path %>" class="hover:text-slate-300">고객사</a>
+    <span class="mx-1">/</span>
+    <a href="<%= platform_account_console_setup_path(@account) %>" class="hover:text-slate-300"><%= @account.name %></a>
+    <span class="mx-1">/</span>
+    <span class="text-slate-300">channels</span>
+  </nav>
+  <div class="flex items-center justify-between gap-4">
+    <h1 class="text-2xl font-bold text-slate-100"><%= @account.name %> · channels</h1>
+    <%= link_to "← 설정으로", platform_account_console_setup_path(@account), class: "text-sm text-slate-400 hover:text-slate-200" %>
+  </div>
+</header>
+
+<section class="bg-slate-800 rounded-lg border border-slate-700 p-6">
+  <p class="text-sm text-slate-400">
+    channels 콘솔. (P4-4 에서 실 데이터 + 통제 액션 채울 예정. 현재는 라우트/컨트롤러/뷰 골격만 검증.)
+  </p>
+  <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+    <div class="bg-slate-900 rounded p-3"><div class="text-slate-500 text-xs">account.id</div><div class="text-slate-200">#<%= @account.id %></div></div>
+    <div class="bg-slate-900 rounded p-3"><div class="text-slate-500 text-xs">status</div><div class="text-slate-200"><%= @account.status %></div></div>
+    <div class="bg-slate-900 rounded p-3"><div class="text-slate-500 text-xs">created</div><div class="text-slate-200"><%= @account.created_at.strftime("%Y-%m-%d") %></div></div>
+    <div class="bg-slate-900 rounded p-3"><div class="text-slate-500 text-xs">industry</div><div class="text-slate-200"><%= @account.id % 5 %></div></div>
+  </div>
+</section>
