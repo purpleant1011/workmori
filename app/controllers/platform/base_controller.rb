@@ -5,6 +5,6 @@ class Platform::BaseController < ApplicationController
   private
 
   def require_platform_sign_in!
-    redirect_to main_app.url_for(controller: "platform/sessions", action: "new", only_path: true) unless signed_in_as_platform?
+    redirect_to platform_login_path unless signed_in_as_platform?
   end
 end
