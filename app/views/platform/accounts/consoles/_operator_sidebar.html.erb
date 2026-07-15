@@ -1,0 +1,68 @@
+<%# _operator_sidebar.html.erb — 7-IA 사이드바 (이미지 디자인) %>
+<%
+  account = local_assigns[:account]
+  current_controller = local_assigns[:current_controller]
+  current_action = local_assigns[:current_action]
+
+  is_setup = current_action == "setup" || current_controller == "dashboards"
+  is_confirm = current_controller == "audit_events" || current_action == "audit" || current_action == "inquiries"
+  is_change_proposal = current_action == "audit"
+  is_content = current_controller == "content_items" || current_action == "content"
+  is_inquiry = current_action == "inquiries"
+  is_discord = current_action == "channels" && current_controller == "channel_connections"
+  is_channel = current_action == "channels"
+  is_msg_sync = current_action == "monitoring"
+  is_automation = current_action == "automations"
+  is_pub_history = current_action == "monitoring"
+  is_report = false
+  is_send_log = current_action == "monitoring"
+  is_business = current_action == "persona"
+  is_knowledge = current_action == "knowledge"
+  is_faq = current_action == "knowledge"
+  is_product = false
+  is_settings = current_action == "runtime" || current_action == "safety"
+
+  active_class = "bg-emerald-50 text-emerald-700 font-medium border-l-4 border-emerald-500"
+%>
+
+<nav class="bg-white rounded-lg border border-slate-200 overflow-hidden text-sm">
+  <div class="px-4 py-2 bg-slate-50 border-b border-slate-200 text-xs font-medium text-slate-500 uppercase tracking-wider">① 오늘</div>
+  <a href="<%= platform_account_console_setup_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_setup ? active_class : '' %>">🌸 데시보드</a>
+
+  <div class="px-4 py-2 bg-slate-50 border-b border-y border-slate-200 text-xs font-medium text-slate-500 uppercase tracking-wider mt-2">② 확인할 일</div>
+  <a href="<%= platform_account_console_audit_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_confirm ? active_class : '' %>">
+    📝 확인이 필요한 일
+    <% if @pending_actions_count.to_i > 0 %>
+      <span class="ml-1 inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-rose-500 text-white text-xs"><%= @pending_actions_count %></span>
+    <% end %>
+  </a>
+  <a href="<%= platform_account_console_audit_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_change_proposal ? active_class : '' %>">
+    🪄 변경 제안 (소희 학습)
+  </a>
+
+  <div class="px-4 py-2 bg-slate-50 border-b border-y border-slate-200 text-xs font-medium text-slate-500 uppercase tracking-wider mt-2">③ 콘텐츠</div>
+  <a href="<%= platform_account_console_content_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_content ? active_class : '' %>">📅 콘텐츠 캘린더</a>
+
+  <div class="px-4 py-2 bg-slate-50 border-b border-y border-slate-200 text-xs font-medium text-slate-500 uppercase tracking-wider mt-2">④ 고객 문의</div>
+  <a href="<%= platform_account_console_inquiries_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_inquiry ? active_class : '' %>">💬 문의 응대</a>
+
+  <div class="px-4 py-2 bg-slate-50 border-b border-y border-slate-200 text-xs font-medium text-slate-500 uppercase tracking-wider mt-2">⑤ 연결 상태</div>
+  <a href="<%= platform_account_console_channels_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_discord ? active_class : '' %>">💬 Discord 대화</a>
+  <a href="<%= platform_account_console_channels_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_channel ? active_class : '' %>">🔌 채널 연결 상태</a>
+  <a href="<%= platform_account_console_monitoring_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_msg_sync ? active_class : '' %>">🔄 메시지 동기화</a>
+  <a href="<%= platform_account_console_automations_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_automation ? active_class : '' %>">🤖 자동 게시 규칙</a>
+  <a href="<%= platform_account_console_monitoring_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_pub_history ? active_class : '' %>">📡 게시 이력</a>
+
+  <div class="px-4 py-2 bg-slate-50 border-b border-y border-slate-200 text-xs font-medium text-slate-500 uppercase tracking-wider mt-2">⑥ 보고서</div>
+  <a href="<%= platform_account_console_audit_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_report ? active_class : '' %>">📈 일간 / 주간 보고</a>
+  <a href="<%= platform_account_console_monitoring_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_send_log ? active_class : '' %>">📋 발송 기록</a>
+
+  <div class="px-4 py-2 bg-slate-50 border-b border-y border-slate-200 text-xs font-medium text-slate-500 uppercase tracking-wider mt-2">⑦ 매장 정보·지원</div>
+  <a href="<%= platform_account_console_persona_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_business ? active_class : '' %>">🏪 사업장 정보</a>
+  <a href="<%= platform_account_console_knowledge_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_knowledge ? active_class : '' %>">📚 매장 안내 자료</a>
+  <a href="<%= platform_account_console_knowledge_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_faq ? active_class : '' %>">❓ 자주 받는 질문</a>
+  <a href="<%= platform_account_console_knowledge_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_product ? active_class : '' %>">💰 가격표 / 상품</a>
+  <a href="<%= platform_account_console_runtime_path(account) %>" class="block px-4 py-2.5 hover:bg-slate-50 <%= is_settings ? active_class : '' %>">⚙️ 설정</a>
+  <a href="<%= platform_root_path %>" class="block px-4 py-2.5 hover:bg-slate-50">📞 운영팀 문의</a>
+  <a href="<%= platform_accounts_path %>" class="block px-4 py-2.5 hover:bg-slate-50 text-slate-500">해지 신청</a>
+</nav>

@@ -2,35 +2,55 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <title><%= brand.brand_name %> 운영자</title>
+  <title><%= brand.brand_name %> · 운영자 콘솔</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <%= csrf_meta_tags %>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen">
-  <header class="bg-slate-800 border-b border-slate-700">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-      <a href="<%= platform_root_path %>" class="font-bold text-emerald-400"><%= brand.brand_name %> · 운영자 콘솔</a>
-      <nav class="text-sm flex gap-4">
-        <a href="<%= platform_root_path %>" class="hover:text-emerald-300">대시보드</a>
-        <a href="<%= platform_accounts_path %>" class="hover:text-emerald-300">계정</a>
-        <a href="<%= platform_inquiries_path %>" class="hover:text-emerald-300">문의</a>
-        <a href="<%= platform_industries_path %>" class="hover:text-emerald-300">산업</a>
-        <a href="<%= platform_feature_flags_path %>" class="hover:text-emerald-300">기능</a>
-        <a href="<%= platform_reports_path %>" class="hover:text-emerald-300">보고</a>
-        <a href="<%= platform_audit_events_path %>" class="hover:text-emerald-300">감사 기록</a>
-        <a href="<%= platform_safety_logs_path %>" class="hover:text-emerald-300">안전 기록</a>
-        <a href="<%= platform_runtime_configs_path %>" class="hover:text-emerald-300">런타임 설정</a>
-        <a href="<%= platform_hermes_path %>" class="hover:text-emerald-300">Hermes</a>
-        <a href="<%= platform_announcements_path %>" class="hover:text-emerald-300">공지</a>
-        <%= button_to "로그아웃", platform_logout_path, method: :delete, class: "text-slate-400 hover:text-rose-300" %>
-      </nav>
+<body class="bg-slate-50 text-slate-900">
+  <header class="bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+      <a href="<%= platform_root_path %>" class="flex items-center gap-2">
+        <span class="text-2xl">🌸</span>
+        <div>
+          <div class="font-semibold text-slate-900"><%= brand.brand_name %></div>
+          <div class="text-[11px] text-slate-500 -mt-0.5">운영형 AI 마케팅 직원</div>
+        </div>
+      </a>
+
+      <div class="ml-auto flex items-center gap-3 text-sm">
+        <% if @current_account&.name %>
+          <span class="text-slate-600 hidden sm:inline"><%= @current_account.name %></span>
+          <% if @setup_readiness %>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium <%= @setup_readiness[:ready] ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' %>">
+              <span><%= @setup_readiness[:ready] ? '✅' : '🛠️' %></span>
+              <span>셋업 준비도 <%= @setup_readiness[:percent] %>%</span>
+            </span>
+          <% end %>
+        <% end %>
+        <%= button_to "로그아웃", platform_logout_path, method: :delete, form: { class: "inline" }, class: "text-slate-500 hover:text-rose-600 text-sm" %>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto p-4">
-    <% if notice %><div class="rounded bg-emerald-700/30 border border-emerald-500 px-4 py-2 mb-4 text-emerald-200"><%= notice %></div><% end %>
-    <%= yield %>
-  </main>
+  <div class="max-w-[1440px] mx-auto px-4 py-4 flex gap-4">
+    <%# ── 사이드바 — 7-IA 운영자 콘솔 (2026-07-15 리뉴얼) ── %>
+    <aside class="w-56 flex-shrink-0">
+      <% account = @current_account || @account %>
+      <% if account %>
+        <%= render partial: "platform/accounts/consoles/operator_sidebar", locals: { account: account, current_controller: controller_name, current_action: action_name } %>
+      <% else %>
+        <nav class="bg-white rounded-lg border border-slate-200 overflow-hidden text-sm">
+          <a href="<%= platform_accounts_path %>" class="block px-4 py-2.5 hover:bg-slate-50">🌸 사업자 목록</a>
+        </nav>
+      <% end %>
+    </aside>
+
+    <main class="flex-1 min-w-0">
+      <% if notice %><div class="rounded-md bg-emerald-50 border border-emerald-200 px-4 py-2 mb-4 text-emerald-800 text-sm"><%= notice %></div><% end %>
+      <% if alert  %><div class="rounded-md bg-rose-50 border border-rose-200 px-4 py-2 mb-4 text-rose-800 text-sm"><%= alert %></div><% end %>
+      <%= yield %>
+    </main>
+  </div>
 </body>
 </html>
